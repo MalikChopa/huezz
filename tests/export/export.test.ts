@@ -217,8 +217,8 @@ describe('PNG layout (pure data)', () => {
 
 describe('Swift compiles (swiftc -typecheck)', () => {
   const swiftc = spawnSync('swiftc', ['--version'], { encoding: 'utf8' });
-  const present = swiftc.status === 0;
-  it.skipIf(!present)('the three palettes type-check, a broken file does not (skipped only when swiftc is absent from the machine)', () => {
+  const present = swiftc.status === 0 && process.platform === 'darwin';
+  it.skipIf(!present)('the three palettes type-check, a broken file does not (skipped when swiftc is absent or the machine is not a Mac: SwiftUI exists only on Apple platforms)', () => {
     mkdirSync(WORK, { recursive: true });
     for (const [name, input] of Object.entries(FIXTURES)) {
       const file = `${WORK}/${name}.swift`;
