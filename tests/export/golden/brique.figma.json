@@ -1,0 +1,51 @@
+{
+  "$description": "Huezz : palette, harmonie split-complémentaire",
+  "clair": {
+    "$type": "color",
+    "fond": {
+      "$value": "#F6EFEA"
+    },
+    "surface": {
+      "$value": "#FFFAF6"
+    },
+    "texte": {
+      "$value": "#1F100B"
+    },
+    "accent": {
+      "$value": "#9A3A1E"
+    },
+    "accent2": {
+      "$value": "#2F6F7A"
+    },
+    "succes": {
+      "$value": "#2D6A2F"
+    },
+    "alerte": {
+      "$value": "#B3261E"
+    }
+  },
+  "sombre": {
+    "$type": "color",
+    "fond": {
+      "$value": "#150C09"
+    },
+    "surface": {
+      "$value": "#1F1410"
+    },
+    "texte": {
+      "$value": "#F3E8E3"
+    },
+    "accent": {
+      "$value": "#F0956F"
+    },
+    "accent2": {
+      "$value": "#7CC4CF"
+    },
+    "succes": {
+      "$value": "#7FD18A"
+    },
+    "alerte": {
+      "$value": "#F2837A"
+    }
+  }
+}

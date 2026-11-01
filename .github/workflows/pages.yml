@@ -1,0 +1,59 @@
+# Builds, checks and deploys Huezz to GitHub Pages. Written on 2026-11-01; NEVER RUN so far.
+#
+# Before the first run: Settings > Pages > Build and deployment > Source = "GitHub Actions".
+#
+# Action versions below were read on the official releases pages on 2026-11-01 (latest release of each):
+#   actions/checkout v7.0.1, actions/setup-node v7.1.0, actions/configure-pages v6.0.0,
+#   actions/upload-pages-artifact v5.0.0, actions/deploy-pages v5.0.1.
+# They are pinned to these version tags, not to commit hashes (not done).
+#
+# NOT VERIFIED: that Google Chrome is preinstalled on ubuntu-latest (the end-to-end tests launch the "chrome" channel
+# of playwright-core). If it is not, the "Check" step fails and a Chrome install step is needed. The WebKit tests
+# skip themselves with a warning when the Playwright WebKit build is absent, which is expected on this runner.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Least privilege: the jobs get what they need and nothing else.
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install (exact versions from package-lock.json)
+        run: npm ci
+      - name: Check (typecheck, tests, build, size, end-to-end)
+        run: npm run check
+      - name: Build
+        run: npm run build
+      - uses: actions/configure-pages@v6.0.0
+      - uses: actions/upload-pages-artifact@v5.0.0
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5.0.1

@@ -1,0 +1,22 @@
+/* Huezz : palette, harmonie split-complémentaire */
+:root {
+  --huezz-fond: #F6EFEA;
+  --huezz-surface: #FFFAF6;
+  --huezz-texte: #1F100B;
+  --huezz-accent: #9A3A1E;
+  --huezz-accent-2: #2F6F7A;
+  --huezz-succes: #2D6A2F;
+  --huezz-alerte: #B3261E;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --huezz-fond: #150C09;
+    --huezz-surface: #1F1410;
+    --huezz-texte: #F3E8E3;
+    --huezz-accent: #F0956F;
+    --huezz-accent-2: #7CC4CF;
+    --huezz-succes: #7FD18A;
+    --huezz-alerte: #F2837A;
+  }
+}

@@ -1,0 +1,22 @@
+/* Huezz : palette, harmonie complémentaire */
+@theme {
+  --color-fond: #E7F2EF;
+  --color-surface: #F7FBFA;
+  --color-texte: #071916;
+  --color-accent: #137A6B;
+  --color-accent-2: #845060;
+  --color-succes: #206720;
+  --color-alerte: #B01F29;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-fond: #060E0D;
+    --color-surface: #0F1917;
+    --color-texte: #E1E9E7;
+    --color-accent: #6EBCAD;
+    --color-accent-2: #C792A1;
+    --color-succes: #79CF8D;
+    --color-alerte: #EE7063;
+  }
+}

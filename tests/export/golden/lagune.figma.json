@@ -1,0 +1,51 @@
+{
+  "$description": "Huezz : palette, harmonie complémentaire",
+  "clair": {
+    "$type": "color",
+    "fond": {
+      "$value": "#E7F2EF"
+    },
+    "surface": {
+      "$value": "#F7FBFA"
+    },
+    "texte": {
+      "$value": "#071916"
+    },
+    "accent": {
+      "$value": "#137A6B"
+    },
+    "accent2": {
+      "$value": "#845060"
+    },
+    "succes": {
+      "$value": "#206720"
+    },
+    "alerte": {
+      "$value": "#B01F29"
+    }
+  },
+  "sombre": {
+    "$type": "color",
+    "fond": {
+      "$value": "#060E0D"
+    },
+    "surface": {
+      "$value": "#0F1917"
+    },
+    "texte": {
+      "$value": "#E1E9E7"
+    },
+    "accent": {
+      "$value": "#6EBCAD"
+    },
+    "accent2": {
+      "$value": "#C792A1"
+    },
+    "succes": {
+      "$value": "#79CF8D"
+    },
+    "alerte": {
+      "$value": "#EE7063"
+    }
+  }
+}

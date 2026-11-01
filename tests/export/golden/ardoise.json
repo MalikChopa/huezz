@@ -1,0 +1,23 @@
+{
+  "generateur": "Huezz",
+  "version": 1,
+  "harmonie": "monochrome",
+  "clair": {
+    "fond": "#EEF1F6",
+    "surface": "#F9FAFD",
+    "texte": "#0F1420",
+    "accent": "#34509A",
+    "accent2": "#5C7BC4",
+    "succes": "#256B3A",
+    "alerte": "#B4232F"
+  },
+  "sombre": {
+    "fond": "#0B0E15",
+    "surface": "#131824",
+    "texte": "#E6EAF3",
+    "accent": "#8FA8E8",
+    "accent2": "#B7C6F2",
+    "succes": "#74CC8C",
+    "alerte": "#F07C7C"
+  }
+}

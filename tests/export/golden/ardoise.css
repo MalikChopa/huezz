@@ -1,0 +1,22 @@
+/* Huezz : palette, harmonie monochrome */
+:root {
+  --huezz-fond: #EEF1F6;
+  --huezz-surface: #F9FAFD;
+  --huezz-texte: #0F1420;
+  --huezz-accent: #34509A;
+  --huezz-accent-2: #5C7BC4;
+  --huezz-succes: #256B3A;
+  --huezz-alerte: #B4232F;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --huezz-fond: #0B0E15;
+    --huezz-surface: #131824;
+    --huezz-texte: #E6EAF3;
+    --huezz-accent: #8FA8E8;
+    --huezz-accent-2: #B7C6F2;
+    --huezz-succes: #74CC8C;
+    --huezz-alerte: #F07C7C;
+  }
+}

@@ -1,0 +1,155 @@
+{
+  "width": 1400,
+  "height": 400,
+  "rects": [
+    {
+      "x": 0,
+      "y": 0,
+      "w": 200,
+      "h": 400,
+      "fill": "#E7F2EF"
+    },
+    {
+      "x": 200,
+      "y": 0,
+      "w": 200,
+      "h": 400,
+      "fill": "#F7FBFA"
+    },
+    {
+      "x": 400,
+      "y": 0,
+      "w": 200,
+      "h": 400,
+      "fill": "#071916"
+    },
+    {
+      "x": 600,
+      "y": 0,
+      "w": 200,
+      "h": 400,
+      "fill": "#137A6B"
+    },
+    {
+      "x": 800,
+      "y": 0,
+      "w": 200,
+      "h": 400,
+      "fill": "#845060"
+    },
+    {
+      "x": 1000,
+      "y": 0,
+      "w": 200,
+      "h": 400,
+      "fill": "#206720"
+    },
+    {
+      "x": 1200,
+      "y": 0,
+      "w": 200,
+      "h": 400,
+      "fill": "#B01F29"
+    }
+  ],
+  "texts": [
+    {
+      "x": 16,
+      "y": 356,
+      "text": "Fond",
+      "fill": "#000000",
+      "font": "600 15px ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif"
+    },
+    {
+      "x": 16,
+      "y": 380,
+      "text": "#E7F2EF",
+      "fill": "#000000",
+      "font": "500 15px ui-monospace, \"SF Mono\", Menlo, Consolas, monospace"
+    },
+    {
+      "x": 216,
+      "y": 356,
+      "text": "Surface",
+      "fill": "#000000",
+      "font": "600 15px ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif"
+    },
+    {
+      "x": 216,
+      "y": 380,
+      "text": "#F7FBFA",
+      "fill": "#000000",
+      "font": "500 15px ui-monospace, \"SF Mono\", Menlo, Consolas, monospace"
+    },
+    {
+      "x": 416,
+      "y": 356,
+      "text": "Texte",
+      "fill": "#FFFFFF",
+      "font": "600 15px ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif"
+    },
+    {
+      "x": 416,
+      "y": 380,
+      "text": "#071916",
+      "fill": "#FFFFFF",
+      "font": "500 15px ui-monospace, \"SF Mono\", Menlo, Consolas, monospace"
+    },
+    {
+      "x": 616,
+      "y": 356,
+      "text": "Accent",
+      "fill": "#FFFFFF",
+      "font": "600 15px ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif"
+    },
+    {
+      "x": 616,
+      "y": 380,
+      "text": "#137A6B",
+      "fill": "#FFFFFF",
+      "font": "500 15px ui-monospace, \"SF Mono\", Menlo, Consolas, monospace"
+    },
+    {
+      "x": 816,
+      "y": 356,
+      "text": "Accent secondaire",
+      "fill": "#FFFFFF",
+      "font": "600 15px ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif"
+    },
+    {
+      "x": 816,
+      "y": 380,
+      "text": "#845060",
+      "fill": "#FFFFFF",
+      "font": "500 15px ui-monospace, \"SF Mono\", Menlo, Consolas, monospace"
+    },
+    {
+      "x": 1016,
+      "y": 356,
+      "text": "Succès",
+      "fill": "#FFFFFF",
+      "font": "600 15px ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif"
+    },
+    {
+      "x": 1016,
+      "y": 380,
+      "text": "#206720",
+      "fill": "#FFFFFF",
+      "font": "500 15px ui-monospace, \"SF Mono\", Menlo, Consolas, monospace"
+    },
+    {
+      "x": 1216,
+      "y": 356,
+      "text": "Alerte",
+      "fill": "#FFFFFF",
+      "font": "600 15px ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif"
+    },
+    {
+      "x": 1216,
+      "y": 380,
+      "text": "#B01F29",
+      "fill": "#FFFFFF",
+      "font": "500 15px ui-monospace, \"SF Mono\", Menlo, Consolas, monospace"
+    }
+  ]
+}

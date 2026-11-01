@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Huezz : générateur de palettes</title>
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0iIzExMTExMSIvPjxjaXJjbGUgY3g9IjE2IiBjeT0iMTYiIHI9IjciIGZpbGw9IiNGRkZGRkYiLz48L3N2Zz4=">
+<meta name="description" content="Huezz génère des palettes de couleurs (OKLCH) avec aperçu en direct et contrastes WCAG vérifiés.">
+</head>
+<body>
+<a class="skip" href="#scene">Aller à l'aperçu</a>
+
+<header class="bar">
+  <h1 class="brand"><span class="brand-mark" aria-hidden="true"></span>Huezz</h1>
+  <div class="ctrls" role="group" aria-label="Réglages de génération">
+    <div class="chip-base">
+      <input type="color" id="base" aria-label="Choisir la couleur de base" value="#0f7c74">
+      <input type="text" id="baseHex" aria-label="Couleur de base, code hexadécimal" aria-describedby="baseErr" spellcheck="false" autocomplete="off" autocapitalize="off">
+      <span class="base-err"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13Z"/><path d="M8 6.5v3.2M8 11.6v.1"/></svg><span id="baseErr" role="status"></span></span>
+    </div>
+    <label class="sel"><span class="sr">Harmonie</span><select id="harm"></select></label>
+    <button class="btn btn-accent" id="hasard" type="button" aria-keyshortcuts="Space"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4.5h2.5c2.5 0 3.5 7 6 7H14M12 9.5l2 2-2 2M2 11.5h2.5c1 0 1.7-1 2.3-2.2M9 6.7c.6-1.2 1.3-2.2 2.5-2.2H14M12 2.5l2 2-2 2"/></svg>Hasard<kbd aria-hidden="true">Espace</kbd></button>
+    <div class="seg" role="group" aria-label="Mode de la palette">
+      <button type="button" data-mode="light" aria-pressed="true" aria-label="Palette claire" title="Palette claire"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1 1M11.6 11.6l1 1M3.4 12.6l1-1M11.6 4.4l1-1"/></svg></button>
+      <button type="button" data-mode="dark" aria-pressed="false" aria-label="Palette sombre" title="Palette sombre" tabindex="-1"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13 9.5A5.5 5.5 0 1 1 6.5 3a4.5 4.5 0 0 0 6.5 6.5Z"/></svg></button>
+    </div>
+  </div>
+  <div class="acts">
+    <button class="btn" id="share" type="button" aria-label="Partager" title="Partager"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6.8 9.2a3 3 0 0 0 4.2 0l2.1-2.1a3 3 0 0 0-4.2-4.2l-.7.7"/><path d="M9.2 6.8a3 3 0 0 0-4.2 0L2.9 8.9a3 3 0 0 0 4.2 4.2l.7-.7"/></svg><span class="btn-lbl">Partager</span></button>
+    <button class="btn btn-ink" id="exportBtn" type="button" aria-label="Exporter" title="Exporter" aria-haspopup="dialog" aria-expanded="false" aria-controls="xmenu"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M2.5 13.5h11"/></svg><span class="btn-lbl">Exporter</span></button>
+  </div>
+</header>
+
+<div class="cdlg xmenu" id="xmenu" role="dialog" aria-labelledby="xTitle" hidden>
+  <div class="cdlg-head"><h2 id="xTitle">Exporter</h2><button type="button" class="cdlg-x" id="xClose" aria-label="Fermer l'export"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8"/></svg></button></div>
+  <div class="xfmt" id="xFormats" role="radiogroup" aria-label="Format">
+    <button type="button" role="radio" data-f="css">CSS</button>
+    <button type="button" role="radio" data-f="tailwind">Tailwind</button>
+    <button type="button" role="radio" data-f="json">JSON</button>
+    <button type="button" role="radio" data-f="swift">Swift</button>
+    <button type="button" role="radio" data-f="figma">Figma</button>
+    <button type="button" role="radio" data-f="png">PNG</button>
+  </div>
+  <div class="xopt" id="xTw" role="radiogroup" aria-label="Version de Tailwind" hidden>
+    <button type="button" role="radio" data-v="v4">Tailwind v4</button>
+    <button type="button" role="radio" data-v="v3">Tailwind v3</button>
+  </div>
+  <div class="xopt" id="xFigma" hidden>
+    <label class="xcheck"><input type="checkbox" id="xFigma2025">Format 2025.10</label>
+    <p class="xhint">Le format 2025.10 n'est pas vérifié avec Figma ni Tokens Studio.</p>
+  </div>
+  <div class="xcode">
+    <div class="xcode-head"><span id="xName">huezz.css</span><button class="btn btn-sm btn-ink" id="xCopy" type="button">Copier</button><button class="btn btn-sm btn-ink" id="xDownload" type="button" hidden>Télécharger</button></div>
+    <textarea id="xOut" readonly spellcheck="false" wrap="off" aria-label="Code exporté"></textarea>
+    <div class="xpng" id="xPng" hidden><canvas id="xCanvas" width="1400" height="400" role="img" aria-label="Aperçu du PNG : 7 bandes de couleur, une par rôle"></canvas></div>
+  </div>
+  <p class="xstatus" id="xStatus" role="status"></p>
+  <p class="xfoot">Généré dans ton navigateur · rien n'est envoyé.</p>
+</div>
+
+<main class="scene-area">
+  <div id="scene" class="scene" tabindex="-1">
+    <div class="scene-head">
+      <div class="scene-titles">
+        <h2 class="scene-title">Palette générée</h2>
+        <p class="cap-meta"><span id="metaHarm">Complémentaire</span> · <span id="metaMode">clair</span> · 7 rôles · <b id="metaAa">5/5</b> contrastes AA</p>
+      </div>
+      <div class="pills-box">
+        <span class="cap-k" id="pillsLbl">Contraste WCAG</span>
+        <div class="pills" id="pills" role="group" aria-labelledby="pillsLbl">
+        <button type="button" class="pill" data-pair="texte-fond" aria-haspopup="dialog" aria-expanded="false" aria-controls="cdlg"><span class="pill-dot" aria-hidden="true"></span><span class="pill-name">Texte sur fond</span><b class="pill-ratio" aria-hidden="true"></b><span class="pill-lv" aria-hidden="true"></span><svg class="i-warn" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13Z"/><path d="M8 6.5v3.2M8 11.6v.1"/></svg></button>
+        <button type="button" class="pill" data-pair="texte-surface" aria-haspopup="dialog" aria-expanded="false" aria-controls="cdlg"><span class="pill-dot" aria-hidden="true"></span><span class="pill-name">Texte sur surface</span><b class="pill-ratio" aria-hidden="true"></b><span class="pill-lv" aria-hidden="true"></span><svg class="i-warn" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13Z"/><path d="M8 6.5v3.2M8 11.6v.1"/></svg></button>
+        <button type="button" class="pill" data-pair="accent-fond" aria-haspopup="dialog" aria-expanded="false" aria-controls="cdlg"><span class="pill-dot" aria-hidden="true"></span><span class="pill-name">Accent sur fond</span><b class="pill-ratio" aria-hidden="true"></b><span class="pill-lv" aria-hidden="true"></span><svg class="i-warn" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13Z"/><path d="M8 6.5v3.2M8 11.6v.1"/></svg></button>
+        <button type="button" class="pill" data-pair="succes-surface" aria-haspopup="dialog" aria-expanded="false" aria-controls="cdlg"><span class="pill-dot" aria-hidden="true"></span><span class="pill-name">Succès sur surface</span><b class="pill-ratio" aria-hidden="true"></b><span class="pill-lv" aria-hidden="true"></span><svg class="i-warn" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13Z"/><path d="M8 6.5v3.2M8 11.6v.1"/></svg></button>
+        <button type="button" class="pill" data-pair="alerte-surface" aria-haspopup="dialog" aria-expanded="false" aria-controls="cdlg"><span class="pill-dot" aria-hidden="true"></span><span class="pill-name">Alerte sur surface</span><b class="pill-ratio" aria-hidden="true"></b><span class="pill-lv" aria-hidden="true"></span><svg class="i-warn" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13Z"/><path d="M8 6.5v3.2M8 11.6v.1"/></svg></button>
+        <button type="button" class="pill pill-info" data-pair="accent2-fond" aria-haspopup="dialog" aria-expanded="false" aria-controls="cdlg"><span class="pill-dot" aria-hidden="true"></span><span class="pill-name">Accent secondaire sur fond</span><span class="pill-tag" aria-hidden="true"></span><b class="pill-ratio" aria-hidden="true"></b><span class="pill-lv" aria-hidden="true"></span><svg class="i-warn" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13Z"/><path d="M8 6.5v3.2M8 11.6v.1"/></svg></button>
+        </div>
+        <div class="cdlg" id="cdlg" role="dialog" aria-labelledby="cdTitle" hidden>
+          <div class="cdlg-head"><h3 id="cdTitle"></h3><button type="button" class="cdlg-x" id="cdClose" aria-label="Fermer le détail du contraste"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8"/></svg></button></div>
+          <div class="cdlg-sample" aria-hidden="true"></div>
+          <p class="cdlg-hex"><span><i class="chip chip-fg"></i><code id="cdFg"></code></span><span class="cdlg-on">sur</span><span><i class="chip chip-bg"></i><code id="cdBg"></code></span></p>
+          <p class="cdlg-ratio"><b id="cdRatio"></b><small>: 1 · affiché <span id="cdShown"></span></small></p>
+          <ul class="cdlg-levels">
+            <li data-level="0"><span class="lv-name"></span><span class="lv-res"><svg class="i-ok" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 8.5 3 3 6-7"/></svg><svg class="i-no" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8"/></svg><span class="lv-text"></span></span></li>
+            <li data-level="1"><span class="lv-name"></span><span class="lv-res"><svg class="i-ok" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 8.5 3 3 6-7"/></svg><svg class="i-no" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8"/></svg><span class="lv-text"></span></span></li>
+            <li data-level="2"><span class="lv-name"></span><span class="lv-res"><svg class="i-ok" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 8.5 3 3 6-7"/></svg><svg class="i-no" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8"/></svg><span class="lv-text"></span></span></li>
+            <li data-level="3"><span class="lv-name"></span><span class="lv-res"><svg class="i-ok" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 8.5 3 3 6-7"/></svg><svg class="i-no" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8"/></svg><span class="lv-text"></span></span></li>
+          </ul>
+          <div class="cdlg-warn" id="cdWarn" hidden>
+            <svg class="i-warn" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14.5 13.5h-13Z"/><path d="M8 6.5v3.2M8 11.6v.1"/></svg>
+            <p id="cdMsg"></p>
+            <div class="cdlg-fix" id="cdFixBox"><button type="button" class="btn btn-ink btn-sm" id="cdFix">Corriger</button><span class="prop"><i class="chip chip-prop"></i><code id="cdProp"></code></span></div>
+            <div class="cdlg-fix" id="cdFixBgBox" hidden><button type="button" class="btn btn-ink btn-sm" id="cdFixBg">Corriger le fond</button><span class="prop"><i class="chip chip-prop"></i><code id="cdPropBg"></code></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="stage-wrap" id="stageWrap">
+      <div id="stage" class="pal">
+        <div class="piece p-web"><div class="win"><div class="win-bar" aria-hidden="true"><i></i><i></i><i></i><span class="win-url">brindille.exemple</span></div><div class="win-body">
+          <div class="m m-site" role="img" aria-label="Aperçu : page d'accueil d'un site">
+            <div class="m-nav"><span class="m-logo"><i></i>Brindille</span><span class="m-links"><span>Jardins</span><span>Agenda</span><span>Communauté</span><span>Tarifs</span></span><span class="m-btn m-btn-s">Rejoindre</span></div>
+            <div class="m-hero">
+              <div>
+                <span class="m-tag"><i></i>Nouveau : la saison d'automne</span>
+                <h3>Cultive ton quartier, une parcelle à la fois.</h3>
+                <p>Brindille réunit 240 jardins partagés : réserve un créneau, échange des graines et suis les récoltes avec tes voisins.</p>
+                <div class="m-cta"><span class="m-btn">Trouver un jardin</span><span class="m-btn m-ghost">Voir la démo</span></div>
+                <p class="m-ok">✓ 1 284 jardiniers inscrits ce mois-ci</p>
+              </div>
+              <div class="m-art"><span class="m-sun"></span><span class="m-leaf"></span><div class="m-mini"><small>Récolte du jour</small><b>12,4 kg</b><div class="m-spark"><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div>
+            </div>
+            <div class="m-feats">
+              <div class="m-feat"><span class="m-ico"></span><b>Réservation simple</b><p>Choisis un créneau en deux clics, sans inscription.</p></div>
+              <div class="m-feat"><span class="m-ico m-ico2"></span><b>Grainothèque</b><p>Plus de 600 variétés à échanger près de chez toi.</p></div>
+              <div class="m-feat"><span class="m-ico m-ico3"></span><b>Alertes météo</b><p><span class="m-al">Gel annoncé ?</span> Tu es prévenu la veille.</p></div>
+            </div>
+          </div>
+        </div></div></div>
+        <div class="piece p-dash">
+          <div class="m m-dash" role="img" aria-label="Aperçu : tableau de bord">
+            <div class="m-side"><span class="m-slogo"></span><i class="on"></i><i></i><i></i><i></i><i></i></div>
+            <div class="m-main">
+              <div class="m-dhead"><div><b>Vue d'ensemble</b><small>Comptoir · octobre 2026</small></div><span class="m-range">30 derniers jours</span></div>
+              <div class="m-kpis">
+                <div class="m-kpi"><small>Revenus</small><b>48 320 €</b><span class="up">▲ 12,4 %</span></div>
+                <div class="m-kpi"><small>Commandes</small><b>1 284</b><span class="up">▲ 3,1 %</span></div>
+                <div class="m-kpi k3"><small>Taux de retour</small><b>3,8 %</b><span class="bad">▲ 0,9 pt</span></div>
+              </div>
+              <div class="m-chart"><div class="m-ch-head"><b>Ventes par semaine</b><span><i class="a"></i>En ligne<i class="b"></i>Boutique</span></div><div class="m-bars"><div><i></i><i></i></div><div><i></i><i></i></div><div><i></i><i></i></div><div><i></i><i></i></div><div><i></i><i></i></div><div><i></i><i></i></div><div><i></i><i></i></div><div><i></i><i></i></div><div><i></i><i></i></div><div><i></i><i></i></div></div></div>
+              <div class="m-table">
+                <div class="m-tr"><span>#A-1042</span><span>Léa Martin</span><span>84,00 €</span><span class="m-st st-ok">Payée</span></div>
+                <div class="m-tr"><span>#A-1041</span><span>Hugo Petit</span><span>129,90 €</span><span class="m-st st-wait">En attente</span></div>
+                <div class="m-tr"><span>#A-1039</span><span>Nora Diallo</span><span>42,50 €</span><span class="m-st st-bad">Litige</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="piece p-phone">
+          <div class="m m-phone" role="img" aria-label="Aperçu : écran d'application mobile"><div class="m-screen">
+            <div class="m-island"></div>
+            <div class="m-status"><span>9:41</span><span class="m-sig"><i></i><i></i><i></i><b></b></span></div>
+            <div class="m-apphead"><div><small>Mardi 4 novembre</small><b>Bonjour Inès</b></div><span class="m-avatar">IB</span></div>
+            <div class="m-card"><small>Objectif de la semaine</small><b>4 / 5 séances</b><div class="m-prog"><i></i></div><span class="m-card-foot">Encore une et c'est gagné.</span></div>
+            <div class="m-sec"><b>Aujourd'hui</b><small>3 activités</small></div>
+            <div class="m-list">
+              <div class="m-item done"><span class="m-chk">✓</span><div><b>Marche rapide</b><small>30 min · 7 h 30</small></div></div>
+              <div class="m-item"><span class="m-chk"></span><div><b>Méditation</b><small>10 min · 12 h 15</small></div><span class="m-chip">Bientôt</span></div>
+              <div class="m-item"><span class="m-chk"></span><div><b>Étirements</b><small>15 min · hier</small></div><span class="m-chip m-late">En retard</span></div>
+            </div>
+            <div class="m-tabbar"><span class="on"><i></i>Accueil</span><span><i></i>Stats</span><span><i></i>Défis</span><span><i></i>Profil</span></div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="dock" id="dock" role="region" aria-label="Palette : clique une couleur pour copier son code">
+  <div class="swatches" role="list">
+    <div class="sw" data-role="fond" role="listitem">
+      <button class="sw-copy" type="button" tabindex="0"><span class="sw-role">Fond</span><span class="sw-hex"></span></button>
+      <button class="sw-lock" type="button" tabindex="0" aria-pressed="false" aria-label="Verrouiller Fond"><svg viewBox="0 0 16 16" aria-hidden="true" class="i-lock"><rect x="3.2" y="7" width="9.6" height="7" rx="1.8"/><path d="M5.3 7V5.2a2.7 2.7 0 0 1 5.4 0V7"/></svg><svg viewBox="0 0 16 16" aria-hidden="true" class="i-unlock"><rect x="3.2" y="7" width="9.6" height="7" rx="1.8"/><path d="M5.3 7V5.2a2.7 2.7 0 0 1 5.2-1"/></svg></button>
+    </div>
+    <div class="sw" data-role="surface" role="listitem">
+      <button class="sw-copy" type="button" tabindex="-1"><span class="sw-role">Surface</span><span class="sw-hex"></span></button>
+      <button class="sw-lock" type="button" tabindex="-1" aria-pressed="false" aria-label="Verrouiller Surface"><svg viewBox="0 0 16 16" aria-hidden="true" class="i-lock"><rect x="3.2" y="7" width="9.6" height="7" rx="1.8"/><path d="M5.3 7V5.2a2.7 2.7 0 0 1 5.4 0V7"/></svg><svg viewBox="0 0 16 16" aria-hidden="true" class="i-unlock"><rect x="3.2" y="7" width="9.6" height="7" rx="1.8"/><path d="M5.3 7V5.2a2.7 2.7 0 0 1 5.2-1"/></svg></button>
+    </div>
+    <div class="sw" data-role="texte" role="listitem">
+      <button class="sw-copy" type="button" tabindex="-1"><span class="sw-role">Texte</span><span class="sw-hex"></span></button>
+      <button class="sw-lock" type="button" tabindex="-1" aria-pressed="false" aria-label="Verrouiller Texte"><svg viewBox="0 0 16 16" aria-hidden="true" class="i-lock"><rect x="3.2" y="7" width="9.6" height="7" rx="1.8"/><path d="M5.3 7V5.2a2.7 2.7 0 0 1 5.4 0V7"/></svg><svg viewBox="0 0 16 16" aria-hidden="true" class="i-unlock"><rect x="3.2" y="7" width="9.6" height="7" rx="1.8"/><path d="M5.3 7V5.2a2.7 2.7 0 0 1 5.2-1"/></svg></button>
+    </div>
+    <div class="sw" data-role="accent" role="listitem">
+      <button class="sw-copy" type="button" tabindex="-1"><span class="sw-role">Accent</span><span class="sw-hex"></span></button>
+      <button class="sw-lock" type="button" tabindex="-1" aria-pressed="false" aria-label="Verrouiller Accent"><svg viewBox="0 0 16 16" aria-hidden="true" class="i-lock"><rect x="3.2" y="7" width="9.6" height="7" rx="1.8"/><path d="M5.3 7V5.2a2.7 2.7 0 0 1 5.4 0V7"/></svg><svg viewBox="0 0 16 16" aria-hidden="true" class="i-unlock"><rect x="3.2" y="7" width="9.6" height="7" rx="1.8"/><path d="M5.3 7V5.2a2.7 2.7 0 0 1 5.2-1"/></svg></button>
+    </div>
+    <div class="sw" data-role="accent2" role="listitem">
+      <button class="sw-copy" type="button" tabindex="-1"><span class="sw-role">Accent secondaire</span><span class="sw-hex"></span></button>
+      <button class="sw-lock" type="button" tabindex="-1" aria-pressed="false" aria-label="Verrouiller Accent secondaire"><svg viewBox="0 0 16 16" aria-hidden="true" class="i-lock"><rect x="3.2" y="7" width="9.6" height="7" rx="1.8"/><path d="M5.3 7V5.2a2.7 2.7 0 0 1 5.4 0V7"/></svg><svg viewBox="0 0 16 16" aria-hidden="true" class="i-unlock"><rect x="3.2" y="7" width="9.6" height="7" rx="1.8"/><path d="M5.3 7V5.2a2.7 2.7 0 0 1 5.2-1"/></svg></button>
+    </div>
+    <div class="sw" data-role="succes" role="listitem">
+      <button class="sw-copy" type="button" tabindex="-1"><span class="sw-role">Succès</span><span class="sw-hex"></span></button>
+      <button class="sw-lock" type="button" tabindex="-1" aria-pressed="false" aria-label="Verrouiller Succès"><svg viewBox="0 0 16 16" aria-hidden="true" class="i-lock"><rect x="3.2" y="7" width="9.6" height="7" rx="1.8"/><path d="M5.3 7V5.2a2.7 2.7 0 0 1 5.4 0V7"/></svg><svg viewBox="0 0 16 16" aria-hidden="true" class="i-unlock"><rect x="3.2" y="7" width="9.6" height="7" rx="1.8"/><path d="M5.3 7V5.2a2.7 2.7 0 0 1 5.2-1"/></svg></button>
+    </div>
+    <div class="sw" data-role="alerte" role="listitem">
+      <button class="sw-copy" type="button" tabindex="-1"><span class="sw-role">Alerte</span><span class="sw-hex"></span></button>
+      <button class="sw-lock" type="button" tabindex="-1" aria-pressed="false" aria-label="Verrouiller Alerte"><svg viewBox="0 0 16 16" aria-hidden="true" class="i-lock"><rect x="3.2" y="7" width="9.6" height="7" rx="1.8"/><path d="M5.3 7V5.2a2.7 2.7 0 0 1 5.4 0V7"/></svg><svg viewBox="0 0 16 16" aria-hidden="true" class="i-unlock"><rect x="3.2" y="7" width="9.6" height="7" rx="1.8"/><path d="M5.3 7V5.2a2.7 2.7 0 0 1 5.2-1"/></svg></button>
+    </div>
+  </div>
+</div>
+
+<div class="manual" id="manual" role="group" aria-label="Copie manuelle" hidden>
+  <label>Sélectionné : <kbd>Cmd</kbd>/<kbd>Ctrl</kbd> + <kbd>C</kbd> pour copier <input id="manualField" type="text" readonly></label>
+  <span class="manual-esc">Échap pour fermer</span>
+</div>
+<div class="sr" id="live" role="status" aria-live="polite" aria-atomic="true"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"><span></span></div>
+
+<script type="module" src="/src/ui/main.ts"></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+{
+  "name": "huezz",
+  "description": "Colour palette generator in OKLCH: live previews on three mock-ups, WCAG contrast check and one-click fix, light and dark, 7 export outputs, shareable link. Static site, no runtime dependency.",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "license": "MIT",
+  "author": "Chopa",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MalikChopa/huezz.git"
+  },
+  "homepage": "https://malikchopa.github.io/huezz/",
+  "bugs": {
+    "url": "https://github.com/MalikChopa/huezz/issues"
+  },
+  "keywords": [
+    "color-palette",
+    "palette-generator",
+    "oklch",
+    "wcag",
+    "contrast",
+    "design-tokens",
+    "tailwind",
+    "css-variables",
+    "accessibility",
+    "vite",
+    "typescript",
+    "github-pages"
+  ],
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "axe-core": "4.14.0",
+    "playwright-core": "1.64.1",
+    "typescript": "7.0.2",
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "vitest run tests/core tests/palette tests/state tests/ui tests/export tests/build tests/scripts",
+    "typecheck": "tsc --noEmit",
+    "size": "node scripts/size.mjs",
+    "e2e": "vitest run tests/e2e",
+    "check": "npm run typecheck && npm test && npm run build && npm run size && npm run e2e",
+    "visual": "vitest run tests/visual",
+    "perf": "vitest run tests/perf --silent=false",
+    "scan": "node scripts/scan.mjs",
+    "public-copy": "node scripts/public-copy.mjs",
+    "gif": "node scripts/gif.mjs capture"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
