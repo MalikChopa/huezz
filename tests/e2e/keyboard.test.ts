@@ -270,7 +270,14 @@ describe('keyboard operation (1440 and 390 with touch)', () => {
           await page.locator('.pill[data-pair=accent-fond]').focus();
           await page.keyboard.press('Enter');
         }
+        // The stop where the walk starts counts too: after the contrast dialog opens, the focus is on its own button, and Chrome does not behave the same everywhere when Tab runs off the end of the page (on a Mac it comes back to the top once before leaving, on Linux it leaves at once).
         const seen: string[] = [];
+        if (opener !== 'none') {
+          seen.push(await page.evaluate(() => {
+            const a = document.activeElement as Element;
+            return `${a.id || a.className || a.tagName}|${a.closest('#xmenu, #cdlg') !== null ? 'in' : 'page'}`;
+          }));
+        }
         let left = false;
         for (let i = 0; i < 60; i++) {
           await page.keyboard.press('Tab');
@@ -286,8 +293,10 @@ describe('keyboard operation (1440 and 390 with touch)', () => {
           seen.push(state);
         }
         expect(left, `${opener}: focus leaves the page cycle`).toBe(true);
-        expect(seen.length, opener).toBeGreaterThan(opener === 'none' ? 14 : 3);
+        // At least the dialog button, the colour copy and the lock of the dock (1440), or the dialog button alone (a sheet hides the dock under 760 px).
+        expect(seen.length, opener).toBeGreaterThan(opener === 'none' ? 14 : opener === 'contrast' ? (mobile ? 0 : 2) : 3);
         expect(seen.length, opener).toBeLessThan(45);
+        if (opener !== 'none') expect(seen[0], `${opener}: the focus starts inside the dialog`).toMatch(/\|in$/);
         // A page stop comes after the dialog's stops: the dialog does not hold the focus.
         if (opener !== 'none') {
           expect(seen.some((x) => x.endsWith('|in')), opener).toBe(true);

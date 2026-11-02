@@ -225,6 +225,12 @@ kbd{font:500 11px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
   .acts .btn{width:36px;padding:0}
   #hasard{padding:0 14px}
 }
+/* Just above that, a wide font (Linux, Windows, Android) cannot fit the key hint next to the labels: it goes, and the gaps tighten. */
+@media (min-width:961px) and (max-width:1060px){
+  .bar{gap:10px}
+  .btn kbd{display:none}
+  #hasard{padding:0 14px}
+}
 @media (max-width:760px){
   .bar{flex-wrap:wrap;height:auto;padding:calc(10px + env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 10px max(14px,env(safe-area-inset-left));gap:10px}
   .ctrls{display:contents}
@@ -234,6 +240,7 @@ kbd{font:500 11px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
   .sel{flex:1 1 calc(100% - 150px);min-width:0}
   .sel select{width:100%;height:44px;padding:0 30px 0 12px;font-size:16px;text-overflow:ellipsis}
   .sel::after{top:19px}
+  .sel select.is-tight{letter-spacing:-.05em;padding:0 25px 0 8px}
   .btn{height:44px}
   .acts .btn{width:44px}
   #hasard{flex:1 1 auto;padding:0 16px}
@@ -251,7 +258,9 @@ kbd{font:500 11px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
   .scene-head{flex-direction:column;align-items:stretch;gap:12px;min-height:0}
   .pills-box{align-items:stretch}
   .pills{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;max-width:none;margin:-4px -16px;padding:6px 16px;scrollbar-width:none;scroll-snap-type:x proximity;scroll-padding-inline:16px}
-  .pill{flex:none;height:44px;scroll-snap-align:start}
+  .pill{flex:none;height:44px;max-width:calc(100vw - 24px);scroll-snap-align:start}
+  /* A wide font can make the longest pill wider than the window: its name then wraps on two lines instead of leaving the screen. */
+  .pill-name{white-space:normal}
   .scene-title{font-size:36px}
   .dock{bottom:calc(10px + env(safe-area-inset-bottom));width:calc(100% - 20px);padding:6px;border-radius:20px}
   .swatches{overflow-x:auto;scrollbar-width:none;scroll-snap-type:x mandatory;scroll-padding-inline:4px;padding:4px;margin:-4px}
@@ -262,7 +271,7 @@ kbd{font:500 11px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
   .sw-hex{font-size:13.5px}
   .sw-lock{width:44px;height:44px;top:0;right:0}
   body:has(.cdlg:not([hidden])) .dock{visibility:hidden}
-  .toast{bottom:calc(122px + env(safe-area-inset-bottom));max-width:calc(100% - 24px);padding:9px 14px;font-size:13px}
+  .toast{bottom:calc(122px + env(safe-area-inset-bottom));max-width:calc(100% - 16px);padding:9px 12px;font-size:13px;font-weight:500}
   body:has(.cdlg:not([hidden])) .toast{bottom:auto;top:calc(8px + env(safe-area-inset-top))}
   .base-err,.sw-lock::after{display:none}
   .manual{bottom:calc(122px + env(safe-area-inset-bottom));left:12px;right:12px;transform:none;flex-direction:column;align-items:stretch;gap:8px}

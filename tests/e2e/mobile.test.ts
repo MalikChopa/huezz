@@ -85,6 +85,7 @@ describe('reflow (WCAG 1.4.10): no horizontal scroll', () => {
         const cs = getComputedStyle(sel);
         const ctx = document.createElement('canvas').getContext('2d') as CanvasRenderingContext2D;
         ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+        ctx.letterSpacing = cs.letterSpacing === 'normal' ? '0px' : cs.letterSpacing;
         const room = sel.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
         // From 390 px on every option fits; at 320 px the longest ones are cut with an ellipsis (reported, not asserted).
         if (innerWidth >= 390) for (const o of sel.options) if (ctx.measureText(o.textContent ?? '').width > room) bad.push(`select "${o.textContent}": ${Math.round(ctx.measureText(o.textContent ?? '').width)} > ${Math.round(room)}`);

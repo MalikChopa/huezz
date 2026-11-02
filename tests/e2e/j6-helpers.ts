@@ -22,7 +22,34 @@ export type OpenOptions = {
   /** Default: the fixed starting link (J9, the product opens on a random palette). '' opens the page with no link at all. */
   hash?: string;
   clipboard?: boolean;
+  /** Wide-font check: replaces the font stack of the page (`--sans`, and a wide monospace) through the browser protocol (the CSP forbids style elements). `HUEZZ_FONT=Verdana` forces it for every page of a run. */
+  font?: string;
 };
+
+/** Wide font that stands in for the Linux, Windows and Android system fonts. */
+export const WIDE_FONT = 'Verdana';
+
+/**
+ * Replaces the page font with a static two-weight family (Regular up to 500, Bold from 501), the way DejaVu Sans on Linux behaves: the weights 550 to 620 used by the interface then render Bold, which is much wider than the variable system font of the Mac.
+ * Done through an inspector style sheet (the CSP forbids style elements); `local()` sources load no file. The monospace stays as is (Menlo and Liberation Mono have the same advance).
+ */
+export async function forceFont(context: BrowserContext, page: Page, family: string): Promise<void> {
+  const cdp = await context.newCDPSession(page);
+  await cdp.send('DOM.enable');
+  await cdp.send('CSS.enable');
+  const { frameTree } = await cdp.send('Page.getFrameTree');
+  const { styleSheetId } = await cdp.send('CSS.createStyleSheet', { frameId: frameTree.frame.id });
+  const text = [
+    `@font-face{font-family:"Wide";src:local("${family}");font-weight:100 500}`,
+    `@font-face{font-family:"Wide";src:local("${family} Bold");font-weight:501 900}`,
+    ':root{--sans:"Wide",sans-serif}',
+  ].join('');
+  await cdp.send('CSS.setStyleSheetText', { styleSheetId, text });
+  await page.evaluate(async () => {
+    await document.fonts.load('550 16px Wide');
+    window.dispatchEvent(new Event('resize'));
+  });
+}
 
 /** One Chrome per test file, closed afterwards; each `open` gives a fresh context watched for CSP violations and console errors. */
 export function useBrowser(): { open(options?: OpenOptions): Promise<Session> } {
@@ -59,6 +86,11 @@ export function useBrowser(): { open(options?: OpenOptions): Promise<Session> } 
       page.on('pageerror', (e) => probe.errors.push(String(e)));
       await page.goto(url + (options.hash ?? fixedHashFor(options.scheme)));
       await page.waitForSelector('html.is-ready');
+      const font = options.font ?? process.env.HUEZZ_FONT;
+      if (font !== undefined && font !== '') {
+        await forceFont(context, page, font);
+        await frames(page);
+      }
       return { page, context, probe };
     },
   };

@@ -61,7 +61,7 @@ Nothing is sent anywhere: no account, no server, no statistics. The source uses 
 ### Measured numbers (author's Mac, Apple M5, 2026-11-01)
 
 - Page: `dist/index.html` is 100 415 bytes, 29 182 bytes gzipped (`npm run size`).
-- Tests: 481 unit tests (55 of them for the release scripts) and 202 end-to-end tests (of which 19 in WebKit and 6 offline); `npm test` and `npm run e2e` run in this repository on 2026-11-02.
+- Tests: 481 unit tests (55 of them for the release scripts) and 226 end-to-end tests (of which 19 in WebKit and 6 offline); `npm test` and `npm run e2e` run in this repository on 2026-11-02.
 - Smoothness while dragging the colour picker (120 input events, Chrome headless, 1440 x 900): handler plus render p95 of 0.6 to 1.3 ms, and 1.6 to 2.6 ms with the CPU slowed 4 times (several runs; the upper end varies with machine load); 0 long task. Measured on desktop Chrome only, not on a phone.
 
 ### Install and run
@@ -157,7 +157,7 @@ Rien n'est envoyé nulle part : pas de compte, pas de serveur, pas de statistiqu
 ### Chiffres mesurés (Mac de l'auteur, Apple M5, 2026-11-01)
 
 - Page : `dist/index.html` fait 100 415 octets, 29 182 octets compressés en gzip (`npm run size`).
-- Tests : 481 tests unitaires (dont 55 pour les scripts de livraison) et 202 tests de bout en bout (dont 19 dans WebKit et 6 hors ligne) ; `npm test` et `npm run e2e` lancés dans ce dépôt le 2026-11-02.
+- Tests : 481 tests unitaires (dont 55 pour les scripts de livraison) et 226 tests de bout en bout (dont 19 dans WebKit et 6 hors ligne) ; `npm test` et `npm run e2e` lancés dans ce dépôt le 2026-11-02.
 - Fluidité pendant le glissement du sélecteur de couleur (120 événements, Chrome sans fenêtre, 1440 x 900) : gestionnaire plus rendu, p95 de 0,6 à 1,3 ms, et de 1,6 à 2,6 ms avec le processeur ralenti 4 fois (plusieurs passes ; le haut de la plage varie avec la charge de la machine) ; 0 tâche longue. Mesuré sur Chrome de bureau seulement, pas sur téléphone.
 
 ### Installer et lancer

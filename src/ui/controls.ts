@@ -8,7 +8,7 @@ import { showToast } from './toast';
 
 const MODES: readonly Mode[] = ['light', 'dark'];
 
-export const ALL_LOCKED_MESSAGE = 'Les 7 couleurs sont verrouillées : déverrouille-en une pour générer une nouvelle palette.';
+export const ALL_LOCKED_MESSAGE = 'Les 7 couleurs sont verrouillées : déverrouille-en une pour relancer Hasard.';
 export const accentUpdated = (hex: string): string => `Accent mis à jour : ${hex} (verrouillé)`;
 
 /** Hasard (button or Space bar). When it changes nothing (all 7 roles locked) a toast says why instead of staying silent. */

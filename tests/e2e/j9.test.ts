@@ -96,7 +96,7 @@ describe('G1 / I1: a base typed while the accent is locked', () => {
 });
 
 describe('G2: all 7 roles locked, Hasard says why and never announces a new palette', () => {
-  const MESSAGE = 'Les 7 couleurs sont verrouillées : déverrouille-en une pour générer une nouvelle palette.';
+  const MESSAGE = 'Les 7 couleurs sont verrouillées : déverrouille-en une pour relancer Hasard.';
   it('click and Space: the toast says why, the palette and the address do not move, the live region stays empty', async () => {
     const s = await open();
     const { page } = s;

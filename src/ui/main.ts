@@ -12,6 +12,7 @@ import { initControls, runHasard } from './controls';
 import { initDock } from './dock';
 import { getUi } from './dom';
 import { initExportDialog } from './export-dialog';
+import { initHarmonyFit } from './harmony-fit';
 import { initHashSync } from './hash-sync';
 import { factsOf, keyIntent } from './keyboard';
 import { createRenderer, fillHarmonies } from './render';
@@ -24,6 +25,7 @@ import { closeManualCopy, showManualCopy, showToast } from './toast';
 
 const ui = getUi();
 fillHarmonies(ui.harmony);
+initHarmonyFit(ui.harmony);
 
 const dark = window.matchMedia('(prefers-color-scheme: dark)');
 const systemTheme = (): SystemTheme => (dark.matches ? 'dark' : 'light');
