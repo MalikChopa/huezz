@@ -6,7 +6,7 @@ import type { AppState } from '../state/state';
 import type { Store } from '../state/store';
 import type { Ui } from './dom';
 import { HARMONY_LABEL } from './labels';
-import { belowPills, isNarrow, need } from './pills';
+import { belowPills, capPhoneSheet, isNarrow, need } from './pills';
 import { showToast } from './toast';
 
 /** A palette is recorded once it has stayed this long: a colour drag leaves its end point, not each step. */
@@ -107,7 +107,7 @@ export function initHistoryDialog(ui: Ui, history: History, store: Store, quiet:
     if (!isOpen) return;
     if (isNarrow()) {
       rule.style.removeProperty('top');
-      rule.style.removeProperty('max-height');
+      capPhoneSheet(rule.style);
       return;
     }
     let top = Math.max(68, Math.round(belowPills()) + 8);

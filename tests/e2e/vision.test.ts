@@ -228,6 +228,16 @@ describe('reduced motion, forced colours, and the J11 animations with a filter a
     await page.fill('#baseHex', '#c0392b');
     await page.keyboard.press('Enter');
     await settle(page);
+    // The 300 ms morph starts on the next painted frame and ends on the one after its end: with a heavy filter on a slow runner that is later than settle() waits (CI saw 'morph' still there).
+    // Poll for "the morph was seen and every motion class is gone" with a generous limit: a class that stays forever still fails, after the limit.
+    await page.waitForFunction(
+      () => {
+        const w = window as unknown as { __seen: Set<string> };
+        return w.__seen.has('morph') && !['vt', 'vt-wave', 'vt-circle', 'morph'].some((c) => document.documentElement.classList.contains(c));
+      },
+      null,
+      { timeout: 20_000 },
+    );
     const seen = await page.evaluate(() => [...(window as unknown as { __seen: Set<string> }).__seen]);
     expect(seen).toEqual(expect.arrayContaining(['vt-wave', 'vt-circle', 'morph']));
     expect(await page.evaluate(() => document.documentElement.className.split(' ').filter((c) => ['vt', 'vt-wave', 'vt-circle', 'morph'].includes(c)))).toEqual([]);

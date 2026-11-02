@@ -478,33 +478,40 @@ describe('URL: load, live hash, hashchange, reload', () => {
     await clean(s);
   });
 
-  it('replaceState is throttled: 50 Hasard presses (one per frame) make far fewer than 20 calls, and the last state is written', async () => {
+  it('replaceState is throttled: 50 Hasard presses (one per frame) are written at most once per 300 ms, and the last state is written', async () => {
+    // The number of calls depends on how long the 50 frames take (a slow runner needs seconds: 31 calls were seen on CI), so a fixed "fewer than 20" is a frame-rate test, not a throttle test.
+    // What the throttle guarantees is a minimum gap between two writes: that is what is asserted, plus "fewer writes than presses" and "no more than one write per 300 ms of elapsed time (+ 2)".
     const s = await open({
       init: () => {
-        const w = window as unknown as { __replaceCalls: number };
-        w.__replaceCalls = 0;
+        const w = window as unknown as { __replaceAt: number[] };
+        w.__replaceAt = [];
         const original = history.replaceState.bind(history);
         history.replaceState = (...args: Parameters<History['replaceState']>) => {
-          w.__replaceCalls++;
+          w.__replaceAt.push(performance.now());
           original(...args);
         };
       },
     });
     const { page } = s;
     await settle(page);
-    const before = await page.evaluate(() => (window as unknown as { __replaceCalls: number }).__replaceCalls);
+    const before = await page.evaluate(() => (window as unknown as { __replaceAt: number[] }).__replaceAt.length);
+    const startMs = await page.evaluate(() => performance.now());
     await page.evaluate(async () => {
       for (let i = 0; i < 50; i++) {
         document.querySelector<HTMLButtonElement>('#hasard')!.click();
         await new Promise<void>((r) => requestAnimationFrame(() => r()));
       }
     });
-    const duringMs = await page.evaluate(() => performance.now());
     await settle(page);
-    const calls = (await page.evaluate(() => (window as unknown as { __replaceCalls: number }).__replaceCalls)) - before;
-    console.log(`replaceState : ${calls} appels pour 50 Hasard (page ouverte depuis ${Math.round(duringMs)} ms)`);
-    expect(calls).toBeGreaterThanOrEqual(1);
-    expect(calls).toBeLessThan(20);
+    const endMs = await page.evaluate(() => performance.now());
+    const times = (await page.evaluate(() => (window as unknown as { __replaceAt: number[] }).__replaceAt)).slice(before);
+    const gaps = times.slice(1).map((t, i) => t - (times[i] as number));
+    console.log(`replaceState : ${times.length} appels pour 50 Hasard en ${Math.round(endMs - startMs)} ms ; plus petit écart ${Math.round(Math.min(...gaps))} ms`);
+    expect(times.length).toBeGreaterThanOrEqual(1);
+    expect(times.length).toBeLessThan(50);
+    // Timers may fire a few ms early or late; 280 ms is far from "one write per frame" (16 ms).
+    for (const g of gaps) expect(g).toBeGreaterThanOrEqual(280);
+    expect(times.length).toBeLessThanOrEqual(Math.floor((endMs - startMs) / 280) + 2);
     const input = await liveInput(page);
     expect(await dockHex(page)).toEqual(ROLES.map((r) => input.theme[input.mode][r]));
     await clean(s);

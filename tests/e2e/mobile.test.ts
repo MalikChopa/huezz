@@ -1,6 +1,8 @@
 import type { Page } from 'playwright-core';
 import { describe, expect, it } from 'vitest';
-import { settle, shotsDir, useBrowser, type Session } from './j6-helpers';
+import { initialState } from '../../src/state/state';
+import { encodeHash } from '../../src/state/url';
+import { WIDE_FONT, settle, shotsDir, useBrowser, type Session } from './j6-helpers';
 
 const { open } = useBrowser();
 const phone = { width: 390, height: 844, touch: true } as const;
@@ -203,6 +205,36 @@ describe('bottom sheets, toast, safe areas, snapping at 390', () => {
     expect(await page.isVisible('#xmenu')).toBe(false);
     expect(await page.evaluate(() => document.activeElement?.id)).toBe('exportBtn');
   });
+
+  // J14: on a phone the sheet is bottom-anchored and its height follows its content, so whether it reaches the pills depended on the font (CI: 6 px over them with a wider font at 390).
+  // The product now measures the pills and caps the sheet under them (it scrolls inside itself). Checked at four widths, with the system font and with the wide font, for the 6 export formats, a full history and the contrast sheet.
+  const savedLinks = (n: number): string[] => Array.from({ length: n }, (_, i) => encodeHash({ ...initialState('light', 0x01380f55 + i * 977, 'split-complementary'), mode: 'light' }));
+  for (const font of [undefined, WIDE_FONT]) {
+    for (const width of [320, 360, 390, 430]) {
+      it(`sheets stay under the pills at ${width} x 844 (${font === undefined ? 'system font' : 'wide font'}): 6 export formats, a full history, the contrast sheet`, async () => {
+        const saved = JSON.stringify({ v: 1, recent: savedLinks(20), fav: savedLinks(30).slice(20) });
+        const { page } = await open({ width, height: 844, touch: true, font, initScript: `try{localStorage.setItem('huezz.history.v1',${JSON.stringify(saved)})}catch(e){}` });
+        const gap = (id: string): Promise<number> =>
+          page.evaluate((sheetId) => (document.querySelector(sheetId) as HTMLElement).getBoundingClientRect().top - (document.querySelector('#pills') as HTMLElement).getBoundingClientRect().bottom, id);
+        await page.click('#exportBtn');
+        await settle(page);
+        for (const f of ['css', 'tailwind', 'figma', 'json', 'swift', 'png']) {
+          await page.click(`#xFormats [data-f=${f}]`);
+          expect(await gap('#xmenu'), `export ${f}`).toBeGreaterThanOrEqual(-0.5);
+        }
+        await page.click('#xClose');
+        await page.click('#histBtn');
+        await settle(page);
+        expect(await page.locator('#hRec .hitem').count()).toBe(20);
+        expect(await gap('#hmenu'), 'history (20 recent + 10 favourites)').toBeGreaterThanOrEqual(-0.5);
+        expect(await page.$eval('#hmenu', (e) => e.scrollHeight > e.clientHeight), 'a full history scrolls inside its sheet').toBe(true);
+        await page.click('#hClose');
+        await page.click('.pill[data-pair=accent-fond]');
+        await settle(page);
+        expect(await gap('#cdlg'), 'contrast').toBeGreaterThanOrEqual(-0.5);
+      });
+    }
+  }
 
   it('the contrast sheet: inside the window, closable, never over the pills; the dock is hidden behind it (not reachable by Tab)', async () => {
     const { page } = await open(phone);

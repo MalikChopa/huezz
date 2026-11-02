@@ -23,6 +23,23 @@ const hasard = async (page: Page, n = 1): Promise<void> => {
     await page.waitForTimeout(SETTLED);
   }
 };
+/**
+ * One Space press, then wait until that palette is in the stored list (the product records a palette only after 400 ms without a render, so a fixed sleep per press
+ * records fewer palettes on a slow machine: 12 of 22 were seen on the CI runner). Polls the real storage; the limit is generous, the wait ends as soon as it is written.
+ */
+const pressAndWaitRecorded = async (page: Page): Promise<void> => {
+  const newest = (): Promise<string | undefined> => page.evaluate((k) => (JSON.parse(localStorage.getItem(k) ?? '{"recent":[]}') as { recent: string[] }).recent[0], KEY);
+  const before = await newest();
+  await page.keyboard.press('Space');
+  await page.waitForFunction(
+    ([k, prev]) => (JSON.parse(localStorage.getItem(k as string) ?? '{"recent":[]}') as { recent: string[] }).recent[0] !== prev,
+    [KEY, before] as const,
+    { timeout: 30_000 },
+  );
+};
+/** The first screen is recorded too, after 400 ms of calm: wait for it instead of assuming it. */
+const waitFirstRecorded = (page: Page): Promise<unknown> =>
+  page.waitForFunction((k) => ((JSON.parse(localStorage.getItem(k) ?? '{"recent":[]}') as { recent: string[] }).recent.length >= 1), KEY, { timeout: 30_000 });
 const sheetOpen = (page: Page): Promise<boolean> => page.isVisible('#hmenu');
 async function openSheet(page: Page): Promise<void> {
   if (!(await sheetOpen(page))) await page.click('#histBtn');
@@ -98,12 +115,9 @@ describe('recording', () => {
 
   it('keeps the 20 last palettes; the oldest goes', async () => {
     const { page } = await open();
-    await page.waitForTimeout(SETTLED);
+    await waitFirstRecorded(page);
     const first = await page.evaluate(() => location.hash);
-    for (let i = 0; i < 22; i++) {
-      await page.keyboard.press('Space');
-      await page.waitForTimeout(430);
-    }
+    for (let i = 0; i < 22; i++) await pressAndWaitRecorded(page);
     await page.waitForTimeout(SETTLED);
     const rec = await links(page, 'rec');
     expect(rec).toHaveLength(20);
@@ -163,15 +177,12 @@ describe('persistence in the real localStorage', () => {
 
   it('a favourite is not evicted by new palettes', async () => {
     const { page } = await open();
-    await page.waitForTimeout(SETTLED);
+    await waitFirstRecorded(page);
     await openSheet(page);
     await page.locator('#hRec .hstar').first().click();
     await closeSheet(page);
     await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
-    for (let i = 0; i < 22; i++) {
-      await page.keyboard.press('Space');
-      await page.waitForTimeout(430);
-    }
+    for (let i = 0; i < 22; i++) await pressAndWaitRecorded(page);
     await page.waitForTimeout(SETTLED);
     expect(await links(page, 'fav')).toEqual([FIXED_HASH]);
     expect(await links(page, 'rec')).not.toContain(FIXED_HASH);

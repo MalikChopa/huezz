@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { chromium, webkit, type Browser, type BrowserContext, type BrowserType, type Page } from 'playwright-core';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -30,11 +31,23 @@ const recorder = (remove: boolean): void => {
   } as typeof original;
 };
 
-function suite(name: string, type: BrowserType, launchOptions: Record<string, unknown>, chrome: boolean): void {
+/** Same rule as webkit.test.ts: the Playwright WebKit build is absent on the CI runner by design, so its suite is skipped there (with a warning), never failed. */
+const executableOf = (type: BrowserType): string => {
+  try {
+    return type.executablePath();
+  } catch {
+    return '';
+  }
+};
+const webkitExecutable = executableOf(webkit);
+const webkitAvailable = webkitExecutable !== '' && existsSync(webkitExecutable);
+if (!webkitAvailable) console.warn(`motion.test.ts : suite WebKit SAUTÉE : exécutable absent (${webkitExecutable || 'chemin inconnu'})`);
+
+function suite(name: string, type: BrowserType, launchOptions: Record<string, unknown>, chrome: boolean, available = true): void {
   // The animation details of the pseudo-elements are checked in Chrome only: the WebKit build did not show the wave in captures (docs/proto-anim/README.md), so nothing is claimed about it there.
   const detail = chrome;
   const strictErrors = chrome;
-  describe(name, () => {
+  describe.skipIf(!available)(name, () => {
     let browser: Browser;
     const contexts: BrowserContext[] = [];
     beforeAll(async () => {
@@ -324,4 +337,4 @@ function suite(name: string, type: BrowserType, launchOptions: Record<string, un
 }
 
 suite('motion: Chrome', chromium, { channel: 'chrome', headless: true }, true);
-suite('motion: WebKit engine (Playwright build; not Safari itself)', webkit, {}, false);
+suite('motion: WebKit engine (Playwright build; not Safari itself)', webkit, {}, false, webkitAvailable);

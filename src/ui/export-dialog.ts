@@ -2,7 +2,7 @@ import { exportText, FILE_NAME, FORMATS, outputOf, pngLayout, type ExportChoice 
 import type { AppState } from '../state/state';
 import { copyText, type CopyEnv } from './clipboard';
 import type { Ui } from './dom';
-import { belowPills, isNarrow, need } from './pills';
+import { belowPills, capPhoneSheet, isNarrow, need } from './pills';
 import { canvasToBlob, downloadBlob, drawLayout } from './png';
 import { showToast } from './toast';
 
@@ -117,7 +117,7 @@ export function initExportDialog(ui: Ui, getState: () => AppState, env: CopyEnv)
     if (!isOpen) return;
     if (isNarrow()) {
       rule.style.removeProperty('top');
-      rule.style.removeProperty('max-height');
+      capPhoneSheet(rule.style);
       return;
     }
     let top = Math.max(68, Math.round(belowPills()) + 8);
