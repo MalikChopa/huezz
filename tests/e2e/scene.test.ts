@@ -105,8 +105,8 @@ describe('scene and mock-ups (file://, Chrome headless, CSP not bypassed)', () =
     // the stage holds nothing the keyboard can reach
     const focusable = await page.$$eval('#stage a, #stage button, #stage input, #stage select, #stage [tabindex]', (els) => els.length);
     expect(focusable).toBe(0);
-    const head = await page.$eval('.scene-titles', (e) => e.textContent?.replace(/\s+/g, ' ').trim() ?? '');
-    expect(head).toBe('Palette générée Complémentaire · clair · 7 rôles · 5/5 contrastes AA');
+    const head = await page.$eval('.scene-titles', (e) => (e as HTMLElement).innerText.replace(/\s+/g, ' ').trim());
+    expect(head).toBe('Argile turquoise Complémentaire · clair · 7 rôles · 5/5 contrastes AA');
   });
 
   it('the scene head follows the state: harmony, mode, number of AA pairs', async () => {
@@ -114,8 +114,8 @@ describe('scene and mock-ups (file://, Chrome headless, CSP not bypassed)', () =
     await page.selectOption('#harm', 'triad');
     await page.click('.seg button[data-mode="dark"]');
     await frames(page);
-    const head = await page.$eval('.scene-titles', (e) => e.textContent?.replace(/\s+/g, ' ').trim() ?? '');
-    expect(head).toMatch(/^Palette générée Triade · sombre · 7 rôles · [0-5]\/5 contrastes AA$/);
+    const head = await page.$eval('.scene-titles', (e) => (e as HTMLElement).innerText.replace(/\s+/g, ' ').trim());
+    expect(head).toMatch(/^\p{Lu}\p{Ll}+ \p{Ll}+ Triade · sombre · 7 rôles · [0-5]\/5 contrastes AA$/u);
   });
 
   it('the mock-up colours equal the role variables at load, and after each Hasard they change and still equal them', async () => {
@@ -237,26 +237,32 @@ describe('scene and mock-ups (file://, Chrome headless, CSP not bypassed)', () =
     expect(probe.errors).toEqual([]);
   });
 
-  it('keeps the same 0.3 s fade as the variables, and none with prefers-reduced-motion', async () => {
+  it('a new base colour fades in 0.3 s through OKLCH on the mock-ups (neither the old nor the new colour in between), and at once with prefers-reduced-motion', async () => {
+    const cta = (page: Page): Promise<string> => page.evaluate(() => getComputedStyle(document.querySelector('.m-site .m-cta .m-btn')!).backgroundColor);
+    const setBase = async (page: Page): Promise<void> => {
+      await page.fill('#baseHex', '#B02060');
+      await page.press('#baseHex', 'Enter');
+    };
     const { page } = await open();
-    const before = await page.evaluate(() => getComputedStyle(document.querySelector('.m-site .m-cta .m-btn')!).backgroundColor);
-    await page.click('#hasard');
+    const before = await cta(page);
+    await setBase(page);
     await page.waitForTimeout(120);
-    const mid = await page.evaluate(() => getComputedStyle(document.querySelector('.m-site .m-cta .m-btn')!).backgroundColor);
+    const mid = await cta(page);
     await page.waitForTimeout(500);
-    const end = await page.evaluate(() => getComputedStyle(document.querySelector('.m-site .m-cta .m-btn')!).backgroundColor);
+    const end = await cta(page);
     expect(end).not.toBe(before);
     expect(mid, 'mid-fade colour is neither the old nor the new one').not.toBe(before);
     expect(mid).not.toBe(end);
+    expect(await page.evaluate(() => document.documentElement.classList.contains('morph')), 'the class of the fade is gone at rest').toBe(false);
 
     const reduced = await open({ reducedMotion: true });
-    const b2 = await reduced.page.evaluate(() => getComputedStyle(document.querySelector('.m-site .m-cta .m-btn')!).backgroundColor);
-    await reduced.page.click('#hasard');
+    const b2 = await cta(reduced.page);
+    await setBase(reduced.page);
     await reduced.page.waitForTimeout(120);
-    const m2 = await reduced.page.evaluate(() => getComputedStyle(document.querySelector('.m-site .m-cta .m-btn')!).backgroundColor);
+    const m2 = await cta(reduced.page);
     expect(m2).not.toBe(b2);
     await reduced.page.waitForTimeout(400);
-    expect(await reduced.page.evaluate(() => getComputedStyle(document.querySelector('.m-site .m-cta .m-btn')!).backgroundColor)).toBe(m2);
+    expect(await cta(reduced.page)).toBe(m2);
   });
 
   for (const mode of ['light', 'dark'] as const) {

@@ -1,5 +1,6 @@
 import { HARMONY_LABEL } from './labels';
 import { computeFit, type Fit } from './fit';
+import { paletteName } from '../palette/name';
 import type { AppState } from '../state/state';
 
 function need<T extends Element>(selector: string): T {
@@ -23,9 +24,17 @@ export function aaCount(state: AppState): { ok: number; total: number } {
   return { ok: pairs.filter((p) => p.ok).length, total: pairs.length };
 }
 
+let named: { theme: AppState['theme']; mode: AppState['mode']; text: string } | null = null;
+/** Name of the displayed palette («Brume dorée»); the title and the live region ask for it on the same change, so it is worked out once. */
+export function nameOfState(state: AppState): string {
+  if (named === null || named.theme !== state.theme || named.mode !== state.mode) named = { theme: state.theme, mode: state.mode, text: paletteName(state.theme[state.mode], state.mode) };
+  return named.text;
+}
+
 export type SceneView = { update(next: AppState): void };
 
 export function initScene(): SceneView {
+  const title = textNodeOf(need('.scene-title'));
   const harm = textNodeOf(need('#metaHarm'));
   const mode = textNodeOf(need('#metaMode'));
   const aa = textNodeOf(need('#metaAa'));
@@ -65,6 +74,8 @@ export function initScene(): SceneView {
 
   return {
     update(next) {
+      const name = nameOfState(next);
+      if (title.data !== name) title.data = name;
       const harmony = HARMONY_LABEL[next.harmony];
       if (harm.data !== harmony) harm.data = harmony;
       const modeText = next.mode === 'light' ? 'clair' : 'sombre';

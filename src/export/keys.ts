@@ -1,5 +1,6 @@
 import type { Harmony } from '../core/harmony';
 import { parseHex, type Rgb } from '../core/hex';
+import { paletteName } from '../palette/name';
 import { ROLES, type Mode, type Palette, type Role, type ThemeColors } from '../palette/roles';
 import { HARMONY_LABEL } from '../ui/labels';
 
@@ -30,8 +31,11 @@ export const keyOf = (format: KeyFormat, role: Role): string => KEY_NAMES[role][
 /** What every export reads: the 14 colours, the harmony (header) and the displayed mode (PNG only). */
 export type ExportInput = { readonly harmony: Harmony; readonly mode: Mode; readonly theme: ThemeColors };
 
-/** One line naming Huezz and the palette: no URL, no date, no personal data. */
-export const titleLine = (input: ExportInput): string => `Huezz : palette, harmonie ${HARMONY_LABEL[input.harmony].toLowerCase()}`;
+/** The palette name of the displayed mode (the one shown above the preview). */
+export const nameOf = (input: ExportInput): string => paletteName(input.theme[input.mode], input.mode);
+
+/** One line naming Huezz, the palette and its harmony: no URL, no date, no personal data. */
+export const titleLine = (input: ExportInput): string => `Huezz : palette ${nameOf(input)}, harmonie ${HARMONY_LABEL[input.harmony].toLowerCase()}`;
 
 /** `indent + key: value;` lines in role order. */
 export function rolesToLines(palette: Palette, format: KeyFormat, indent: string, line: (key: string, hex: string) => string): string {

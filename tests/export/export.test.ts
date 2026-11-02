@@ -5,6 +5,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { describe, expect, it } from 'vitest';
 import { exportText, FILE_NAME, outputOf, pngLayout, type OutputId } from '../../src/export';
 import { KEY_NAMES } from '../../src/export/keys';
+import { paletteName } from '../../src/palette/name';
 import { ROLES } from '../../src/palette/roles';
 import { onAccent } from '../../src/palette/theme';
 import { FIXTURES, OUTPUTS } from './fixtures';
@@ -81,6 +82,22 @@ describe('headers: Huezz and the palette, nothing personal', () => {
   }
 });
 
+describe('palette name in the first line (brief 25)', () => {
+  const FIRST: Record<string, string> = {
+    lagune: 'Huezz : palette ',
+    brique: 'Huezz : palette ',
+    ardoise: 'Huezz : palette ',
+  };
+  for (const [name, input] of Object.entries(FIXTURES)) {
+    it(`${name}: CSS, Tailwind v3 and v4, Swift and Figma (both forms) say the name of the displayed mode; PNG layout has none`, () => {
+      const label = paletteName(input.theme[input.mode], input.mode);
+      const line = `${FIRST[name]}${label}, harmonie `;
+      for (const id of ['css', 'tailwind-v4', 'tailwind-v3', 'swift', 'figma', 'figma-2025.10'] as const) expect(exportText(id, input), id).toContain(line);
+      expect(JSON.stringify(pngLayout(input))).not.toContain(label);
+    });
+  }
+});
+
 describe('CSS and Tailwind', () => {
   const input = FIXTURES.lagune!;
   it('CSS: 7 variables per block, dark block under prefers-color-scheme', () => {
@@ -115,11 +132,12 @@ describe('CSS and Tailwind', () => {
 });
 
 describe('JSON', () => {
-  it('{ version: 1, harmonie, clair, sombre } and nothing else but the generator name', () => {
+  it('{ version: 1, harmonie, name, clair, sombre } and nothing else but the generator name', () => {
     for (const input of Object.values(FIXTURES)) {
       const data = JSON.parse(exportText('json', input)) as Record<string, unknown>;
-      expect(Object.keys(data).sort()).toEqual(['clair', 'generateur', 'harmonie', 'sombre', 'version']);
+      expect(Object.keys(data).sort()).toEqual(['clair', 'generateur', 'harmonie', 'nom', 'sombre', 'version']);
       expect(data.version).toBe(1);
+      expect(data.nom).toBe(paletteName(input.theme[input.mode], input.mode));
       expect(data.harmonie).toBe(input.harmony);
       expect(data.clair).toEqual(input.theme.light);
       expect(data.sombre).toEqual(input.theme.dark);

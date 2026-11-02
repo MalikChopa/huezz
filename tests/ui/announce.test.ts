@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { fixPair } from '../../src/state/fix';
 import { hasard, setBase, setHarmony, setMode, toggleLock } from '../../src/state/state';
 import { fixedState } from '../fixed-state';
+import { paletteName } from '../../src/palette/name';
 import { announcement } from '../../src/ui/announce';
+
+const nameOf = (s: ReturnType<typeof fixedState>) => paletteName(s.theme[s.mode], s.mode);
 
 const start = fixedState('light');
 
@@ -12,18 +15,18 @@ describe('announcement (live region sentence)', () => {
   });
   it('Hasard: new palette, accent of the current mode, AA count', () => {
     const next = hasard()(start);
-    expect(announcement(start, next)).toBe(`Nouvelle palette : accent ${next.theme.light.accent}, 5 sur 5 contrastes AA`);
+    expect(announcement(start, next)).toBe(`Nouvelle palette : ${nameOf(next)}, accent ${next.theme.light.accent}, 5 sur 5 contrastes AA`);
   });
   it('dark mode says the dark accent', () => {
     const next = setMode('dark')(start);
-    expect(announcement(start, next)).toBe(`Palette sombre : accent ${next.theme.dark.accent}, 5 sur 5 contrastes AA`);
-    expect(announcement(next, setMode('light')(next))).toMatch(/^Palette claire : accent #[0-9A-F]{6}, \d sur 5 contrastes AA$/);
+    expect(announcement(start, next)).toBe(`Palette sombre : ${nameOf(next)}, accent ${next.theme.dark.accent}, 5 sur 5 contrastes AA`);
+    expect(announcement(next, setMode('light')(next))).toMatch(/^Palette claire : \p{Lu}\p{Ll}+ \p{Ll}+, accent #[0-9A-F]{6}, \d sur 5 contrastes AA$/u);
   });
   it('harmony and base', () => {
     const triad = setHarmony('triad')(start);
-    expect(announcement(start, triad)).toMatch(/^Harmonie triade : accent #[0-9A-F]{6}, \d sur 5 contrastes AA$/);
+    expect(announcement(start, triad)).toMatch(/^Harmonie triade : \p{Lu}\p{Ll}+ \p{Ll}+, accent #[0-9A-F]{6}, \d sur 5 contrastes AA$/u);
     const base = setBase('#E0A800')(start);
-    expect(announcement(start, base)).toMatch(/^Couleur de base appliquée : accent #E0A800, 4 sur 5 contrastes AA$/);
+    expect(announcement(start, base)).toMatch(/^Couleur de base appliquée : \p{Lu}\p{Ll}+ \p{Ll}+, accent #E0A800, 4 sur 5 contrastes AA$/u);
   });
   it('J9: a lock change says one short sentence, with the gender of the role', () => {
     const locked = toggleLock('fond')(start);
@@ -50,7 +53,11 @@ describe('announcement (live region sentence)', () => {
     expect(fixed).not.toBe(yellow);
     expect(announcement(yellow, fixed)).toBeNull();
   });
-  it('the sentence stays short (one breath)', () => {
-    expect(announcement(start, hasard()(start))?.length).toBeLessThan(70);
+  it('brief 25: the sentence says the palette name; it stays short (one breath): under 70 characters without the name, under 80 with it', () => {
+    const next = hasard()(start);
+    const text = announcement(start, next) as string;
+    expect(text).toContain(`: ${nameOf(next)}, accent `);
+    expect(text.length - nameOf(next).length).toBeLessThan(70);
+    expect(text.length).toBeLessThan(80);
   });
 });

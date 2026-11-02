@@ -138,11 +138,11 @@ describe('target size at 390 (WCAG 2.5.8 minimum 24 x 24; 44 x 44 for the main c
     await take('contraste');
     // The checked elements really exist: bar, pills, dock, both menus.
     const names = new Set(all.map((b) => b.name.split('/')[1]));
-    for (const must of ['base', 'harm', 'hasard', 'share', 'exportBtn', 'texte-fond', 'xClose', 'xCopy', 'xDownload', 'cdClose', 'cdFix', 'xFigma2025', 'xOut']) expect(names.has(must), must).toBe(true);
+    for (const must of ['base', 'harm', 'vision', 'hasard', 'share', 'exportBtn', 'texte-fond', 'xClose', 'xCopy', 'xDownload', 'cdClose', 'cdFix', 'xFigma2025', 'xOut']) expect(names.has(must), must).toBe(true);
     expect(all.length).toBeGreaterThan(100);
     const small = all.filter((b) => b.w < 24 || b.h < 24);
     expect(small, 'sous 24 x 24').toEqual([]);
-    const MAIN = /^(base|harm|hasard|share|exportBtn|xClose|cdClose|xCopy|xDownload|cdFix|cdFixBg|texte-fond|texte-surface|accent-fond|succes-surface|alerte-surface|accent2-fond|css|tailwind|json|swift|figma|png|v4|v3|sw-copy|sw-lock|Palette (claire|sombre))$/;
+    const MAIN = /^(base|harm|vision|hasard|share|exportBtn|xClose|cdClose|xCopy|xDownload|cdFix|cdFixBg|texte-fond|texte-surface|accent-fond|succes-surface|alerte-surface|accent2-fond|css|tailwind|json|swift|figma|png|v4|v3|sw-copy|sw-lock|Palette (claire|sombre))$/;
     const mainSmall = all.filter((b) => MAIN.test(b.name.split('/')[1] ?? '') && (b.w < 44 || b.h < 44));
     expect(mainSmall, 'contrôles principaux sous 44 x 44').toEqual([]);
     // Dock colours (copy buttons) are whole swatches.
@@ -161,7 +161,7 @@ describe('target size at 390 (WCAG 2.5.8 minimum 24 x 24; 44 x 44 for the main c
     const { page } = await open(phone);
     // #baseHex is display:none under 760 px (the colour input does the job), so it never takes the focus.
     const sizes = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('input:not([type=checkbox]):not([type=color]):not(#baseHex), select, textarea')].map((e) => ({ id: e.id, px: parseFloat(getComputedStyle(e).fontSize) })));
-    expect(sizes.map((s) => s.id).sort()).toEqual(['harm', 'manualField', 'xOut']);
+    expect(sizes.map((s) => s.id).sort()).toEqual(['harm', 'manualField', 'vision', 'xOut']);
     for (const s of sizes) expect(s.px, s.id).toBeGreaterThanOrEqual(16);
   });
 });

@@ -39,7 +39,7 @@ Complementary (+180°), analogous (±40°), triad (+120°, +240°), tetrad (+90�
 
 ### Exports (7 outputs)
 
-CSS variables (with a dark `@media` block), Tailwind v4 (`@theme`), Tailwind v3 (`darkMode: 'media'`), JSON, a Swift file, Figma tokens (`#RRGGBB` by default, an option writes the 2025.10 format), PNG (7 bands, 1400 x 400). Every text output names Huezz and the harmony at the very top (the first line, or the first fields of the JSON and Figma files); none names the mode, because the light and the dark values are both in each file (only the PNG follows the mode on screen). No output holds an address or a date.
+CSS variables (with a dark `@media` block), Tailwind v4 (`@theme`), Tailwind v3 (`darkMode: 'media'`), JSON, a Swift file, Figma tokens (`#RRGGBB` by default, an option writes the 2025.10 format), PNG (7 bands, 1400 x 400). Every text output names Huezz, the palette name and the harmony at the very top (the first line, or the first fields of the JSON and Figma files); none names the mode, because the light and the dark values are both in each file (only the PNG follows the mode on screen). No output holds an address or a date.
 
 Not verified: the Tailwind outputs were not compiled with Tailwind, and the Figma 2025.10 format was not tried in Figma or Tokens Studio (the interface says so). The Swift output passes `swiftc -typecheck` (Apple Swift 6.4, 2026-11-01).
 
@@ -60,8 +60,8 @@ Nothing is sent anywhere: no account, no server, no statistics. The source uses 
 
 ### Measured numbers (author's Mac, Apple M5, 2026-11-01)
 
-- Page: `dist/index.html` is 100 415 bytes, 29 182 bytes gzipped (`npm run size`).
-- Tests: 481 unit tests (55 of them for the release scripts) and 226 end-to-end tests (of which 19 in WebKit and 6 offline); `npm test` and `npm run e2e` run in this repository on 2026-11-02.
+- Page: `dist/index.html` is 110 178 bytes, 32 471 bytes gzipped (`npm run size`).
+- Tests: 535 unit tests (55 of them for the release scripts) and 266 end-to-end tests (of which 30 in WebKit and 6 offline); `npm test` and `npm run e2e` run in this repository on 2026-11-02.
 - Smoothness while dragging the colour picker (120 input events, Chrome headless, 1440 x 900): handler plus render p95 of 0.6 to 1.3 ms, and 1.6 to 2.6 ms with the CPU slowed 4 times (several runs; the upper end varies with machine load); 0 long task. Measured on desktop Chrome only, not on a phone.
 
 ### Install and run
@@ -135,7 +135,7 @@ Complémentaire (+180°), analogue (±40°), triade (+120°, +240°), tétrade (
 
 ### Exports (7 sorties)
 
-Variables CSS (avec un bloc `@media` sombre), Tailwind v4 (`@theme`), Tailwind v3 (`darkMode: 'media'`), JSON, un fichier Swift, jetons Figma (`#RRGGBB` par défaut, une option écrit le format 2025.10), PNG (7 bandes, 1400 x 400). Chaque sortie texte nomme Huezz et l'harmonie tout en haut (première ligne, ou premiers champs des fichiers JSON et Figma) ; aucune ne nomme le mode, car les valeurs claires et sombres sont toutes deux dans chaque fichier (seul le PNG suit le mode affiché). Aucune sortie ne contient d'adresse ni de date.
+Variables CSS (avec un bloc `@media` sombre), Tailwind v4 (`@theme`), Tailwind v3 (`darkMode: 'media'`), JSON, un fichier Swift, jetons Figma (`#RRGGBB` par défaut, une option écrit le format 2025.10), PNG (7 bandes, 1400 x 400). Chaque sortie texte nomme Huezz, le nom de la palette et l'harmonie tout en haut (première ligne, ou premiers champs des fichiers JSON et Figma) ; aucune ne nomme le mode, car les valeurs claires et sombres sont toutes deux dans chaque fichier (seul le PNG suit le mode affiché). Aucune sortie ne contient d'adresse ni de date.
 
 Non vérifié : les sorties Tailwind n'ont pas été compilées avec Tailwind, et le format Figma 2025.10 n'a pas été essayé dans Figma ni dans Tokens Studio (l'interface le dit). La sortie Swift passe `swiftc -typecheck` (Apple Swift 6.4, 2026-11-01).
 
@@ -156,8 +156,8 @@ Rien n'est envoyé nulle part : pas de compte, pas de serveur, pas de statistiqu
 
 ### Chiffres mesurés (Mac de l'auteur, Apple M5, 2026-11-01)
 
-- Page : `dist/index.html` fait 100 415 octets, 29 182 octets compressés en gzip (`npm run size`).
-- Tests : 481 tests unitaires (dont 55 pour les scripts de livraison) et 226 tests de bout en bout (dont 19 dans WebKit et 6 hors ligne) ; `npm test` et `npm run e2e` lancés dans ce dépôt le 2026-11-02.
+- Page : `dist/index.html` fait 110 178 octets, 32 471 octets compressés en gzip (`npm run size`).
+- Tests : 535 tests unitaires (dont 55 pour les scripts de livraison) et 266 tests de bout en bout (dont 30 dans WebKit et 6 hors ligne) ; `npm test` et `npm run e2e` lancés dans ce dépôt le 2026-11-02.
 - Fluidité pendant le glissement du sélecteur de couleur (120 événements, Chrome sans fenêtre, 1440 x 900) : gestionnaire plus rendu, p95 de 0,6 à 1,3 ms, et de 1,6 à 2,6 ms avec le processeur ralenti 4 fois (plusieurs passes ; le haut de la plage varie avec la charge de la machine) ; 0 tâche longue. Mesuré sur Chrome de bureau seulement, pas sur téléphone.
 
 ### Installer et lancer

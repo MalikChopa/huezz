@@ -1,4 +1,4 @@
-// Huezz : palette, harmonie monochrome
+// Huezz : palette Basalte indigo, harmonie monochrome
 module.exports = {
   darkMode: 'media',
   theme: {

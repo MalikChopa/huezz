@@ -133,7 +133,7 @@ describe('G2: all 7 roles locked, Hasard says why and never announces a new pale
     await lock(page, 'fond').click();
     await page.click('#hasard');
     await page.waitForTimeout(1000);
-    expect(await live(page)).toMatch(/^Nouvelle palette : accent #[0-9A-F]{6}/);
+    expect(await live(page)).toMatch(/^Nouvelle palette : \p{Lu}\p{Ll}+ \p{Ll}+, accent #[0-9A-F]{6}/u);
     expect(s.probe.errors).toEqual([]);
     await s.context.close();
   });

@@ -1,4 +1,4 @@
-// Huezz : palette, harmonie split-complémentaire
+// Huezz : palette Prisme corail, harmonie split-complémentaire
 module.exports = {
   darkMode: 'media',
   theme: {

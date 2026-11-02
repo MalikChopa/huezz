@@ -115,6 +115,14 @@ kbd{font:500 11px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
 /* Contrast pills (scene head) */
 .pills-box{display:flex;flex-direction:column;align-items:flex-end;gap:8px;min-width:0}
 .cap-k{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ui-muted)}
+/* The label row is 15 px high; the Vision select (28 px) sits on its baseline and rises into the empty top padding, so the scene head keeps its height. */
+.pills-top{display:flex;align-items:flex-end;justify-content:flex-end;gap:20px;height:15px;max-width:100%}
+.vision{display:flex;align-items:center;gap:8px}
+.vision .sel select{height:28px;padding:0 28px 0 12px;font-size:12.5px}
+.vision .sel::after{top:9px;right:12px}
+.vision-note{margin:2px 0 0;color:var(--ui-ink);font-size:12.5px;line-height:1.35}
+.vision-note[hidden]{display:none}
+.vision-defs{position:absolute;width:0;height:0;overflow:hidden}
 .pills{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:900px}
 .pill{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 10px 0 4px;border-radius:999px;border:1px solid var(--ui-line-control);background:var(--ui-bg);color:var(--ui-ink);font-size:12.5px;font-weight:550;white-space:nowrap;transition:background-color .2s,border-color .2s}
 .pill:hover{border-color:var(--ui-ink)}
@@ -257,6 +265,11 @@ kbd{font:500 11px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
   .scene-area{padding:18px 16px calc(132px + env(safe-area-inset-bottom));min-height:0}
   .scene-head{flex-direction:column;align-items:stretch;gap:12px;min-height:0}
   .pills-box{align-items:stretch}
+  .pills-top{height:auto;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 12px}
+  .vision{min-width:0;max-width:100%}
+  .vision .sel{flex:0 1 auto;min-width:0}
+  .vision .sel select{width:auto;height:44px;padding:0 34px 0 14px;font-size:16px}
+  .vision .sel::after{top:19px;right:15px}
   .pills{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;max-width:none;margin:-4px -16px;padding:6px 16px;scrollbar-width:none;scroll-snap-type:x proximity;scroll-padding-inline:16px}
   .pill{flex:none;height:44px;max-width:calc(100vw - 24px);scroll-snap-align:start}
   /* A wide font can make the longest pill wider than the window: its name then wraps on two lines instead of leaving the screen. */
@@ -278,6 +291,12 @@ kbd{font:500 11px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
   .manual input{display:block;width:100%;height:44px;margin:6px 0 0;font-size:16px}
 }
 
+/* Vision preview (F3): the 3 mock-ups and the dock swatches only, through the SVG filters of index.html (linear light, the matrices of src/core/cvd.ts).
+   The filter sits on each named element itself (not on a parent), so the View Transition snapshots of the wave keep it. */
+:root[data-vision=protan] :is(.piece,.sw){filter:url(#cvd-protan)}
+:root[data-vision=deutan] :is(.piece,.sw){filter:url(#cvd-deutan)}
+:root[data-vision=tritan] :is(.piece,.sw){filter:url(#cvd-tritan)}
+
 /* Windows high contrast: system colours; palette swatches keep their colours, selected states use Highlight. */
 @media (forced-colors:active){
   :focus-visible{outline:3px solid Highlight;box-shadow:none}
@@ -288,3 +307,12 @@ kbd{font:500 11px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
   .pill.fail .pill-lv{background:HighlightText;color:Highlight}
   .sw.locked .sw-lock{outline:2px solid currentColor;outline-offset:-3px}
 }
+
+/* "Signature" motion. Palette changes other than Hasard and the mode run through OKLCH (class .morph, driven by render.ts): --p goes 0% -> 100%.
+   Hasard (.vt-wave) and the mode (.vt-circle) are View Transitions (motion.ts): the colours change at once and the snapshots do the fade. */
+@property --p{syntax:'<percentage>';inherits:true;initial-value:100%}
+:root.oklch{transition:none}
+:root.morph{--fond:color-mix(in oklch,var(--fond-to) var(--p),var(--fond-from));--surface:color-mix(in oklch,var(--surface-to) var(--p),var(--surface-from));--texte:color-mix(in oklch,var(--texte-to) var(--p),var(--texte-from));--accent:color-mix(in oklch,var(--accent-to) var(--p),var(--accent-from));--accent2:color-mix(in oklch,var(--accent2-to) var(--p),var(--accent2-from));--succes:color-mix(in oklch,var(--succes-to) var(--p),var(--succes-from));--alerte:color-mix(in oklch,var(--alerte-to) var(--p),var(--alerte-from));--sur-accent:color-mix(in oklch,var(--sur-accent-to) var(--p),var(--sur-accent-from));--sur-accent2:color-mix(in oklch,var(--sur-accent2-to) var(--p),var(--sur-accent2-from));--ui-accent:color-mix(in oklch,var(--ui-accent-to) var(--p),var(--ui-accent-from));--ui-on-accent:color-mix(in oklch,var(--ui-on-accent-to) var(--p),var(--ui-on-accent-from))}
+:root.is-ready.vt{--t:0s}
+.vt::view-transition-old(*),.vt::view-transition-new(*){animation:none;mix-blend-mode:normal}
+.vt-wave::view-transition-group(root){animation:none}

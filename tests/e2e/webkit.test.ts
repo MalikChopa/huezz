@@ -24,6 +24,8 @@ const distFile = fileURLToPath(new URL('../../dist/index.html', import.meta.url)
 const ORIGIN = 'https://huezz.test';
 
 /** The one console error WebKit logs on any page that contains a <select> under a style-src CSP (see JOURNAL J7). */
+/** Native <select> elements of the page (Harmonie, and Vision since J12): WebKit logs the error once per select and per document load (control test below). */
+const SELECTS = 2;
 const SELECT_ERROR = /^Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy\.?$/;
 
 type Probe = { violations: string[]; errors: string[] };
@@ -96,8 +98,8 @@ describe.skipIf(!available)('WebKit engine (Playwright build; not Safari itself)
    */
   function expectClean(p: Probe, loads = 1): void {
     expect(p.errors.filter((e) => !SELECT_ERROR.test(e))).toEqual([]);
-    expect(p.errors).toHaveLength(loads);
-    expect(p.violations).toEqual(Array<string>(loads).fill('style-src-attr inline'));
+    expect(p.errors).toHaveLength(loads * SELECTS);
+    expect(p.violations).toEqual(Array<string>(loads * SELECTS).fill('style-src-attr inline'));
   }
 
   describe('the console error and the CSP violation of WebKit', () => {
@@ -125,14 +127,19 @@ describe.skipIf(!available)('WebKit engine (Playwright build; not Safari itself)
       expect(withSelect.errors).toHaveLength(1);
       expect(withSelect.errors[0]).toMatch(SELECT_ERROR);
       expect(withSelect.violations).toEqual(['style-src-attr inline']);
+      // J12: a second select gives a second error, so the count of Huezz (2 selects) is not a new problem but 2 x the known one
+      const withTwo = await probeOf('<select><option>a</option></select><select><option>b</option></select>');
+      expect(withTwo.errors).toHaveLength(2);
+      expect(withTwo.errors.every((e) => SELECT_ERROR.test(e))).toBe(true);
+      expect(withTwo.violations).toEqual(['style-src-attr inline', 'style-src-attr inline']);
     });
 
-    it('Huezz logs that error exactly once at load and nothing else, at 1440 and at 390 with touch', async () => {
+    it('Huezz logs that error once per native select (2) at load and nothing else, at 1440 and at 390 with touch', async () => {
       for (const o of [{}, { width: 390, height: 844, touch: true }]) {
         const { page, probe } = await open(o);
         await settle(page);
         expectClean(probe);
-        expect(probe.errors).toHaveLength(1);
+        expect(probe.errors).toHaveLength(SELECTS);
         // Nothing visual or functional is lost: the select shows the harmony and changes it (see "harmony select" below).
         expect(await page.$eval('#harm', (e) => (e as HTMLSelectElement).value)).toBe('complementary');
       }
@@ -407,6 +414,8 @@ describe.skipIf(!available)('WebKit engine (Playwright build; not Safari itself)
       await lively.page.click('#hasard');
       await frames(lively.page);
       expect(await lively.page.evaluate(() => document.getAnimations().length)).toBeGreaterThan(0);
+      // Hasard is a view transition: --t is 0 while it runs and comes back to .3 s after.
+      await lively.page.waitForFunction(() => !document.documentElement.classList.contains('vt'));
       expect(await lively.page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--t').trim())).toBe('.3s');
       expectClean(calm.probe);
       expectClean(lively.probe);

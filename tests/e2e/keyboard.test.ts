@@ -47,6 +47,7 @@ describe('tab order (section 6), accessible names from the engine', () => {
       'button "Palette claire" [pressed]',
       'button "Partager"',
       'button "Exporter"',
+      'combobox "Vision"',
       ...PILLS.map((n) => `button "${n}"`),
       'button "Fond #E7F2EF, copier le code"',
       'button "Verrouiller Fond"',
@@ -56,12 +57,13 @@ describe('tab order (section 6), accessible names from the engine', () => {
   it('390 px with touch emulation: the same order without the hex field (hidden under 760 px)', async () => {
     const { page } = await open({ width: 390, height: 844, touch: true });
     const seq = await tabSequence(page);
-    expect(seq.length).toBe(15);
+    expect(seq.length).toBe(16);
     expect(seq[0]).toBe('link "Aller à l\'aperçu"');
     expect(seq[1]).toBe('textbox "Choisir la couleur de base"');
     expect(seq.slice(2, 7)).toEqual(['combobox "Harmonie"', 'button "Hasard"', 'button "Palette claire" [pressed]', 'button "Partager"', 'button "Exporter"']);
-    expect(seq.slice(7, 13).map((l) => l.replace(/^button "/, '').split(' : ')[0])).toEqual(['Texte sur fond', 'Texte sur surface', 'Accent sur fond', 'Succès sur surface', 'Alerte sur surface', 'Accent secondaire sur fond']);
-    expect(seq.slice(13)).toEqual(['button "Fond #E7F2EF, copier le code"', 'button "Verrouiller Fond"']);
+    expect(seq[7]).toBe('combobox "Vision"');
+    expect(seq.slice(8, 14).map((l) => l.replace(/^button "/, '').split(' : ')[0])).toEqual(['Texte sur fond', 'Texte sur surface', 'Accent sur fond', 'Succès sur surface', 'Alerte sur surface', 'Accent secondaire sur fond']);
+    expect(seq.slice(14)).toEqual(['button "Fond #E7F2EF, copier le code"', 'button "Verrouiller Fond"']);
   });
 
   it('shift+Tab goes back through the same stops; no stop is inside the mock-ups', async () => {

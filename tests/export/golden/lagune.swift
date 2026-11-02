@@ -1,4 +1,4 @@
-// Huezz : palette, harmonie complémentaire
+// Huezz : palette Argile turquoise, harmonie complémentaire
 import SwiftUI
 
 extension Color {

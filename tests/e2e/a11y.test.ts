@@ -93,7 +93,7 @@ describe('landmarks, headings, names, roles and states', () => {
     expect(await page.title()).toBe('Huezz : générateur de palettes');
     // Open both dialogs in turn so that their headings are in the page when read.
     const headings = async () => page.evaluate(() => [...document.querySelectorAll('h1, h2, h3, h4, h5, h6')].filter((h) => (h as HTMLElement).offsetParent !== null || h.closest('[hidden]') === null).map((h) => [Number(h.tagName[1]), h.textContent?.trim() ?? '']));
-    expect(await headings()).toEqual([[1, 'Huezz'], [2, 'Palette générée'], [3, 'Cultive ton quartier, une parcelle à la fois.']]);
+    expect(await headings()).toEqual([[1, 'Huezz'], [2, 'Argile turquoise'], [3, 'Cultive ton quartier, une parcelle à la fois.']]);
     await page.click('#exportBtn');
     await page.keyboard.press('Escape');
     await page.click('.pill[data-pair=accent-fond]');
@@ -110,7 +110,7 @@ describe('landmarks, headings, names, roles and states', () => {
       '- banner:',
       '  - heading "Huezz" [level=1]',
       '- main:',
-      '  - heading "Palette générée" [level=2]',
+      '  - heading "Argile turquoise" [level=2]',
       '    - textbox "Couleur de base, code hexadécimal": "#137A6B"',
       '    - combobox "Harmonie":',
       '    - button "Hasard"',
@@ -143,8 +143,10 @@ describe('landmarks, headings, names, roles and states', () => {
     expect(pressed).toContain('Palette sombre=false');
     expect(pressed.filter((p) => p.startsWith('Verrouiller'))).toHaveLength(7);
     expect(live.filter((n) => n.role === 'status' && n.props.live === 'polite').length).toBeGreaterThanOrEqual(3);
-    const combo = live.find((n) => n.role === 'combobox');
-    expect(combo?.name).toBe('Harmonie');
+    const combos = live.filter((n) => n.role === 'combobox').map((n) => n.name ?? '');
+    expect(combos).toContain('Harmonie');
+    // the visible label is drawn in capitals by CSS and Chrome's name keeps the capitals; the aria snapshot (keyboard.test.ts) says «Vision»
+    expect(combos.map((n) => n.toLowerCase()).sort()).toEqual(['harmonie', 'vision']);
     const expanded = live.filter((n) => n.role === 'button' && (n.name === 'Exporter' || /^Texte sur fond/.test(n.name ?? ''))).map((n) => [n.props.expanded, n.props.hasPopup]);
     expect(expanded).toEqual([[false, 'dialog'], [false, 'dialog']]);
   });
@@ -211,8 +213,9 @@ describe('live region: one short sentence per burst of changes', () => {
     const accent = (await page.textContent('.sw[data-role=accent] .sw-hex')) as string;
     const aa = (await page.textContent('#metaAa')) as string;
     const [ok, total] = aa.split('/');
-    expect(said[said.length - 1]).toBe(`Nouvelle palette : accent ${accent}, ${ok} sur ${total} contrastes AA`);
-    expect((said[said.length - 1] as string).length).toBeLessThan(70);
+    const title = (await page.textContent('.scene-title')) as string;
+    expect(said[said.length - 1]).toBe(`Nouvelle palette : ${title}, accent ${accent}, ${ok} sur ${total} contrastes AA`);
+    expect((said[said.length - 1] as string).length).toBeLessThan(80);
   });
 
   it('harmony, mode, base and lock each say one sentence; copy says nothing here (the toast does, see j9.test.ts)', async () => {
@@ -226,18 +229,18 @@ describe('live region: one short sentence per burst of changes', () => {
     await settle(page);
     let said = await sayings();
     expect(said).toHaveLength(1);
-    expect(said[0]).toMatch(/^Harmonie triade : accent #[0-9A-F]{6}, \d sur 5 contrastes AA$/);
+    expect(said[0]).toMatch(/^Harmonie triade : \p{Lu}\p{Ll}+ \p{Ll}+, accent #[0-9A-F]{6}, \d sur 5 contrastes AA$/u);
     await page.click('[data-mode=dark]');
     await settle(page);
     said = await sayings();
     expect(said).toHaveLength(2);
-    expect(said[1]).toMatch(/^Palette sombre : accent #[0-9A-F]{6}, \d sur 5 contrastes AA$/);
+    expect(said[1]).toMatch(/^Palette sombre : \p{Lu}\p{Ll}+ \p{Ll}+, accent #[0-9A-F]{6}, \d sur 5 contrastes AA$/u);
     await page.fill('#baseHex', '#336699');
     await page.keyboard.press('Enter');
     await settle(page);
     said = await sayings();
     expect(said).toHaveLength(3);
-    expect(said[2]).toMatch(/^Couleur de base appliquée : accent #[0-9A-F]{6}, \d sur 5 contrastes AA$/);
+    expect(said[2]).toMatch(/^Couleur de base appliquée : \p{Lu}\p{Ll}+ \p{Ll}+, accent #[0-9A-F]{6}, \d sur 5 contrastes AA$/u);
     await page.click('.sw[data-role=fond] .sw-lock');
     await settle(page);
     said = await sayings();
@@ -267,13 +270,14 @@ describe('prefers-reduced-motion', () => {
       await page.keyboard.press('Space');
       const during = await page.evaluate(
         () =>
-          new Promise<{ animations: number; t: string; btnTransition: string; toastTransition: string; swatchTransition: string; fadeSample: string | null }>((resolve) =>
+          new Promise<{ animations: number; t: string; viewTransition: boolean; btnTransition: string; toastTransition: string; swatchTransition: string; fadeSample: string | null }>((resolve) =>
             requestAnimationFrame(() =>
               requestAnimationFrame(() => {
                 const cs = getComputedStyle(document.documentElement);
                 resolve({
                   animations: document.getAnimations().length,
                   t: cs.getPropertyValue('--t').trim(),
+                  viewTransition: document.documentElement.classList.contains('vt'),
                   btnTransition: getComputedStyle(document.querySelector('#hasard') as Element).transitionDuration,
                   toastTransition: getComputedStyle(document.querySelector('#toast') as Element).transitionDuration,
                   swatchTransition: getComputedStyle(document.querySelector('.sw') as Element).transitionDuration,
@@ -286,13 +290,17 @@ describe('prefers-reduced-motion', () => {
       if (reduced) {
         expect(during.animations).toBe(0);
         expect(during.t).toBe('0s');
+        expect(during.viewTransition).toBe(false);
         expect(during.btnTransition).toBe('0s');
         expect(during.toastTransition).toBe('0s');
         expect(during.swatchTransition).toBe('0s');
       } else {
         expect(during.animations).toBeGreaterThan(0);
-        expect(during.t).toBe('.3s');
+        // Hasard is a view transition now: the colour variables change at once (--t is 0 meanwhile) and come back to .3 s when it is over.
+        expect(during.viewTransition).toBe(true);
         expect(during.btnTransition).not.toBe('0s');
+        await page.waitForFunction(() => !document.documentElement.classList.contains('vt'));
+        expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--t').trim())).toBe('.3s');
       }
     }
   });

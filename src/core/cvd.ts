@@ -2,13 +2,21 @@ import { linearToRgb, rgbToLinear, type Linear } from './color';
 import { deltaEOK } from './deltaE';
 import { formatHex, parseHex } from './hex';
 
-/** Dichromacies simulated at full severity (tritanopia is post-MVP: Vienot 1999 is invalid for it). */
-export type Cvd = 'protan' | 'deutan';
-export const CVD_KINDS: readonly Cvd[] = ['protan', 'deutan'];
+/** Dichromacies simulated at full severity. */
+export type Cvd = 'protan' | 'deutan' | 'tritan';
+/** Protan and deutan only: what the success/alert separation checks of the generator use (tritan is for the on-screen preview). */
+export const CVD_KINDS: readonly Exclude<Cvd, 'tritan'>[] = ['protan', 'deutan'];
+/** The three kinds of the vision preview (interface). */
+export const CVD_PREVIEW_KINDS: readonly Cvd[] = ['protan', 'deutan', 'tritan'];
 
 type Matrix = readonly [readonly [number, number, number], readonly [number, number, number], readonly [number, number, number]];
 
-/** Vienot, Brettel and Mollon 1999, adapted to sRGB, applied on LINEAR sRGB (rows sum to 1: greys stay grey). */
+/**
+ * Protan and deutan: Vienot, Brettel and Mollon 1999, adapted to sRGB, applied on LINEAR sRGB (rows sum to 1: greys stay grey).
+ * Tritan: Vienot 1999 is invalid for it, so it takes the published matrix of Machado, Oliveira and Fernandes 2009
+ * ("A Physiologically-based Model for Simulation of Color Vision Deficiency", IEEE TVCG 15(6)), tritanopia at severity 1.0, also on linear sRGB.
+ * Written from memory of the paper's table, no network in the session: rows checked to sum to 1 (unit test). An approximate simulation, not a medical one.
+ */
 export const CVD_MATRICES: Readonly<Record<Cvd, Matrix>> = {
   protan: [
     [0.11238, 0.88762, 0],
@@ -19,6 +27,11 @@ export const CVD_MATRICES: Readonly<Record<Cvd, Matrix>> = {
     [0.29275, 0.70725, 0],
     [0.29275, 0.70725, 0],
     [-0.02234, 0.02234, 1],
+  ],
+  tritan: [
+    [1.255528, -0.076749, -0.178779],
+    [-0.078411, 0.930809, 0.147602],
+    [0.004733, 0.691367, 0.3039],
   ],
 };
 

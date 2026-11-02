@@ -1,7 +1,7 @@
 import { isLocked, ROLES } from '../palette/roles';
 import type { AppState } from '../state/state';
 import { HARMONY_LABEL, lockSentence } from './labels';
-import { aaCount } from './scene';
+import { aaCount, nameOfState } from './scene';
 
 const DELAY_MS = 600;
 
@@ -27,22 +27,23 @@ export function announcement(prev: AppState | null, next: AppState): string | nu
   else if (prev.theme.light.accent !== next.theme.light.accent && prev.theme !== next.theme && prev.locks === next.locks) lead = 'Couleur de base appliquée';
   else return null;
   const { ok, total } = aaCount(next);
-  return `${lead} : accent ${next.theme[next.mode].accent}, ${ok} sur ${total} contrastes AA`;
+  return `${lead} : ${nameOfState(next)}, accent ${next.theme[next.mode].accent}, ${ok} sur ${total} contrastes AA`;
+}
+
+let swap = false;
+/** Writes a sentence in the polite live region; a trailing no-break space on every other call makes the same sentence read again. */
+export function say(region: HTMLElement, text: string): void {
+  swap = !swap;
+  region.textContent = swap ? text : `${text}\u00a0`;
 }
 
 /** Polite live region: one short sentence, after a quiet period, so a burst of changes says only the last. */
 export function initAnnouncer(region: HTMLElement): (prev: AppState | null, next: AppState) => void {
   let timer: number | undefined;
-  let pending: string | null = null;
-  let swap = false;
   return (prev, next) => {
     const text = announcement(prev, next);
     if (text === null) return;
-    pending = text;
     clearTimeout(timer);
-    timer = window.setTimeout(() => {
-      swap = !swap;
-      region.textContent = swap ? pending : `${pending} `;
-    }, DELAY_MS);
+    timer = window.setTimeout(() => say(region, text), DELAY_MS);
   };
 }

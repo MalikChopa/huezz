@@ -333,13 +333,13 @@ describe('failing pair, detail dialog and one-click fix (yellow base #E0A800, li
     await typeBase(page, '#E0A800');
     await page.focus('#hasard');
     const order: string[] = [];
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 8; i++) {
       await page.keyboard.press('Tab');
       order.push(await activeIs(page));
     }
     expect(order[0]).toBe('BUTTON'); // the active mode button
-    // J5: Partager and Exporter sit between the mode toggle and the pills (section 6 tab order)
-    expect(order.slice(1)).toEqual(['share', 'exportBtn', 'texte-fond', 'texte-surface', 'accent-fond', 'succes-surface']);
+    // J5: Partager and Exporter sit between the mode toggle and the pills (section 6 tab order); J12: the Vision select comes just before the pills
+    expect(order.slice(1)).toEqual(['share', 'exportBtn', 'vision', 'texte-fond', 'texte-surface', 'accent-fond', 'succes-surface']);
     await page.keyboard.press('Shift+Tab');
     expect(await activeIs(page)).toBe('accent-fond');
     await page.keyboard.press('Enter');

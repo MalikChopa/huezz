@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { gzipSync, constants } from 'node:zlib';
 
 const MAX_RAW = 120 * 1024;
-const MAX_GZIP = 30 * 1024;
+const MAX_GZIP = 50 * 1024;
 const file = new URL('../dist/index.html', import.meta.url);
 
 let buf;

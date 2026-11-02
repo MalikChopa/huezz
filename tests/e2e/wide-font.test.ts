@@ -1,5 +1,10 @@
 import type { Page } from 'playwright-core';
 import { describe, expect, it } from 'vitest';
+import { HUE_WORDS, NOUN_ROWS, agree, paletteName } from '../../src/palette/name';
+import { fromOklch } from '../../src/core/gamut';
+import { initialState } from '../../src/state/state';
+import { encodeHash } from '../../src/state/url';
+import type { Mode } from '../../src/palette/roles';
 import { WIDE_FONT, settle, useBrowser, type OpenOptions } from './j6-helpers';
 
 /**
@@ -200,6 +205,67 @@ describe('wide font: the pills and the dock stay reachable on a phone', () => {
       const dock = await inside();
       expect(dock.left).toBeGreaterThanOrEqual(0);
       expect(dock.right).toBeLessThanOrEqual(dock.vw);
+    });
+  }
+});
+
+/** J12: the palette name is the scene title. The longest names (by characters, both modes) must fit from 320 to 1440 px with the wide font, with the vision note shown too. */
+function longestNames(): { name: string; mode: Mode; accent: string; fond: string }[] {
+  const out: { name: string; mode: Mode; accent: string; fond: string }[] = [];
+  const lightness = { light: [0.3, 0.55, 0.8], dark: [0.3, 0.55, 0.8] } as const;
+  for (const mode of ['light', 'dark'] as const) {
+    for (const fond of mode === 'light' ? ['#FFFFFF', '#E7F2EF'] : ['#000000', '#0B1110']) {
+      for (const l of lightness[mode]) for (const c of [0.06, 0.095, 0.115, 0.15]) for (let sector = 0; sector < 16; sector++) {
+        const accent = fromOklch({ l, c, h: sector * 22.5 });
+        out.push({ name: paletteName({ accent, fond }, mode), mode, accent, fond });
+      }
+    }
+  }
+  return out.sort((a, b) => b.name.length - a.name.length).filter((x, i, all) => all.findIndex((y) => y.name === x.name) === i).slice(0, 3);
+}
+
+describe('wide font: the longest palette names fit the title (J12)', () => {
+  it('the candidates are real: a name of the lists, 21 or 22 characters at most', () => {
+    const [first] = longestNames();
+    console.log(`J12 longest names tested: ${longestNames().map((n) => `${n.name} (${n.mode}, ${n.name.length})`).join(' ; ')}`);
+    expect(first?.name.length).toBeGreaterThanOrEqual(19);
+    expect(first?.name.length).toBeLessThanOrEqual(22);
+    expect(NOUN_ROWS.flat().length).toBe(48);
+    expect(agree(HUE_WORDS[10] as string, 'f')).toBe('céruléenne');
+  });
+  for (const width of [1440, 1100, 961, 800, 761, 390, 360, 320]) {
+    it(`${width} px: the 3 longest names stay inside the window on at most 2 lines, with and without the vision note`, async () => {
+      for (const cand of longestNames()) {
+        const base = initialState(cand.mode, 0x01380f55, 'complementary');
+        const theme = { ...base.theme, [cand.mode]: { ...base.theme[cand.mode], accent: cand.accent, fond: cand.fond } };
+        const hash = encodeHash({ mode: cand.mode, harmony: 'complementary', seed: 0x01380f55, locks: 0, theme });
+        const { page } = await open({ ...wide(width, 900), scheme: cand.mode, hash });
+        await expectWideFont(page);
+        for (const note of [false, true]) {
+          if (note) {
+            await page.selectOption('#vision', 'deutan');
+            await settle(page);
+          }
+          expect(await page.textContent('.scene-title'), 'the page shows the name that was computed').toBe(cand.name);
+          const r = await page.evaluate(() => {
+            const t = document.querySelector('.scene-title') as HTMLElement;
+            const box = t.getBoundingClientRect();
+            const lines = new Set([...(() => { const g = document.createRange(); g.selectNodeContents(t); return g.getClientRects(); })()].map((q) => Math.round(q.top))).size;
+            const v = (document.querySelector('#vision') as HTMLElement).getBoundingClientRect();
+            return { left: box.left, right: box.right, lines, clip: t.scrollWidth - t.clientWidth, doc: document.documentElement.scrollWidth, inner: innerWidth, vLeft: v.left, vRight: v.right };
+          });
+          const label = `${width} px, « ${cand.name} », note ${note}`;
+          expect(r.left, label).toBeGreaterThanOrEqual(0);
+          expect(r.right, label).toBeLessThanOrEqual(r.inner);
+          expect(r.lines, label).toBeLessThanOrEqual(2);
+          expect(r.clip, label).toBeLessThanOrEqual(0);
+          expect(r.doc, label).toBeLessThanOrEqual(r.inner);
+          expect(r.vLeft, `${label}: the Vision select`).toBeGreaterThanOrEqual(0);
+          expect(r.vRight, `${label}: the Vision select`).toBeLessThanOrEqual(r.inner);
+          const out = await overflow(page);
+          expect(out.out, label).toEqual([]);
+        }
+      }
     });
   }
 });

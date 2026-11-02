@@ -18,8 +18,10 @@ import { factsOf, keyIntent } from './keyboard';
 import { createRenderer, fillHarmonies } from './render';
 import { initShare } from './share';
 import { initSheetScroll } from './sheet';
+import { initMotion, kindOf, transition } from './motion';
 import { initPills } from './pills';
 import { initScene } from './scene';
+import { initVision } from './vision';
 import type { SystemTheme } from './tokens';
 import { closeManualCopy, showManualCopy, showToast } from './toast';
 
@@ -39,14 +41,20 @@ let sync: ReturnType<typeof initHashSync> | null = null;
 // A valid hash wins over the system theme and the random seed; a bad one leaves a fresh random palette and a message.
 const loaded = decodeHash(location.hash);
 const store = createStore(loaded.kind === 'ok' ? stateFromShared(loaded.value) : initialState(systemTheme(), randomSeed()), (prev, next) => {
-  renderShell(prev, next);
-  announce(prev, next);
-  scene.update(next);
-  pills.update(next);
-  dialog?.update(next);
-  exporter?.update(next);
-  sync?.write(next);
+  const update = (): void => {
+    renderShell(prev, next);
+    announce(prev, next);
+    scene.update(next);
+    pills.update(next);
+    dialog?.update(next);
+    exporter?.update(next);
+    sync?.write(next);
+  };
+  const kind = kindOf(prev, next);
+  if (kind) transition(ui, kind, next, update);
+  else update();
 });
+initMotion(ui.root);
 dialog = initContrastDialog(ui, store, pills);
 sync = initHashSync(ui, store);
 if (loaded.kind === 'error') showToast(ui, loaded.message, undefined, 4000);
@@ -68,6 +76,7 @@ for (const id of ['texte-fond', 'texte-surface', 'accent-fond', 'succes-surface'
   pills.button(id).addEventListener('click', () => exporter?.close(false));
 }
 
+initVision(ui.root, ui.live);
 initSheetScroll();
 const dock = initDock(ui, store, (hex) => void copy(hex));
 initControls(ui, store);
