@@ -81,6 +81,24 @@ describe('wide font: the document never overflows', () => {
       await page.click('.pill[data-pair=texte-fond]');
       await settle(page);
       await check('contrast');
+      // J13: the history sheet with the longest harmony name, 3 recents and 2 favourites, and the new bar button
+      await page.keyboard.press('Escape');
+      await page.selectOption('#harm', 'split-complementary');
+      for (let i = 0; i < 3; i++) {
+        await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+        await page.waitForTimeout(450);
+        await page.keyboard.press('Space');
+      }
+      await page.waitForTimeout(450);
+      await page.click('#histBtn');
+      await page.locator('#hRec .hstar').nth(0).click();
+      await page.locator('#hRec .hstar').nth(1).click();
+      await settle(page);
+      expect(await page.locator('#hFav .hitem').count()).toBe(2);
+      await check('history');
+      const cut = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('#hmenu .hname, #hmenu .hname b, #hmenu .hname small, #hmenu .hfoot button, #hmenu .hask')].filter((e) => e.scrollWidth > e.clientWidth + 1).map((e) => e.className || e.id));
+      expect(cut, 'history: no text clipped').toEqual([]);
+      expect(await page.$eval('#hmenu', (e) => e.getBoundingClientRect().right), 'history: the sheet is in the window').toBeLessThanOrEqual(width);
       expect(s.probe.errors).toEqual([]);
     });
   }
@@ -98,7 +116,7 @@ describe('wide font: the bar on a phone', () => {
       const { page } = await open(wide(width, 800));
       await expectWideFont(page);
       const bar = await page.evaluate(() => {
-        const items = [...document.querySelectorAll('.bar .brand, .bar #base, .bar #harm, .bar #hasard, .bar .seg, .bar #share, .bar #exportBtn')];
+        const items = [...document.querySelectorAll('.bar .brand, .bar #base, .bar #harm, .bar #hasard, .bar .seg, .bar #histBtn, .bar #share, .bar #exportBtn')];
         const centres = items.map((e) => { const r = e.getBoundingClientRect(); return r.top + r.height / 2; }).sort((a, b) => a - b);
         const tops = new Set<number>();
         let line = -100;
@@ -115,7 +133,7 @@ describe('wide font: the bar on a phone', () => {
       expect(bar.maxRight).toBeLessThanOrEqual(bar.vw);
       const clipped = await page.evaluate(() => {
         const bad: string[] = [];
-        for (const e of document.querySelectorAll<HTMLElement>('.bar .brand, .bar #hasard, .bar #share, .bar #exportBtn')) {
+        for (const e of document.querySelectorAll<HTMLElement>('.bar .brand, .bar #hasard, .bar #histBtn, .bar #share, .bar #exportBtn')) {
           if (e.scrollWidth > e.clientWidth + 1) bad.push(`${e.id || e.className}: ${e.scrollWidth} > ${e.clientWidth}`);
         }
         const sel = document.querySelector('#harm') as HTMLSelectElement;

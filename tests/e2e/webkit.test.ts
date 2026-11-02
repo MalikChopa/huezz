@@ -30,7 +30,7 @@ const SELECT_ERROR = /^Refused to apply a stylesheet because its hash, its nonce
 
 type Probe = { violations: string[]; errors: string[] };
 type Session = { page: Page; context: BrowserContext; probe: Probe };
-type Options = { width?: number; height?: number; touch?: boolean; scheme?: 'light' | 'dark'; reducedMotion?: boolean; hash?: string; https?: boolean };
+type Options = { width?: number; height?: number; touch?: boolean; scheme?: 'light' | 'dark'; reducedMotion?: boolean; hash?: string; https?: boolean; initScript?: string };
 
 describe.skipIf(!available)('WebKit engine (Playwright build; not Safari itself)', () => {
   let browser: Browser;
@@ -63,6 +63,7 @@ describe.skipIf(!available)('WebKit engine (Playwright build; not Safari itself)
         (window as unknown as { __huezzViolation(d: string, b: string): void }).__huezzViolation(e.effectiveDirective, e.blockedURI);
       });
     });
+    if (o.initScript !== undefined) await page.addInitScript({ content: o.initScript });
     page.on('console', (m) => m.type() === 'error' && probe.errors.push(m.text()));
     page.on('pageerror', (e) => probe.errors.push(String(e)));
     await page.goto((o.https === true ? `${ORIGIN}/` : url) + (o.hash ?? fixedHashFor(o.scheme)));
@@ -489,6 +490,78 @@ describe.skipIf(!available)('WebKit engine (Playwright build; not Safari itself)
         await settle(phone.page);
         await phone.page.screenshot({ path: `${shotsDir}/j7-webkit-390.png` });
       }
+    });
+  });
+
+  describe('J13: history, favourites, undo (WebKit engine of Playwright, not Safari)', () => {
+    const KEY = 'huezz.history.v1';
+    const lists = (page: Page, id: 'hRec' | 'hFav'): Promise<string[]> => page.$$eval(`#${id} .hrow`, (els) => els.map((e) => (e as HTMLElement).dataset.h ?? ''));
+
+    it('persists in localStorage across a reload, keeps a favourite, restores a row, undoes and redoes, clears', async () => {
+      const s = await open({ https: true });
+      const { page } = s;
+      await page.waitForTimeout(650);
+      for (let i = 0; i < 2; i++) {
+        await page.keyboard.press('Space');
+        await page.waitForTimeout(650);
+      }
+      const h2 = await dockHex(page);
+      await page.click('#histBtn');
+      expect(await lists(page, 'hRec')).toHaveLength(3);
+      await page.locator('#hRec .hstar').nth(1).click();
+      const rec = await lists(page, 'hRec');
+      const fav = await lists(page, 'hFav');
+      expect(fav).toHaveLength(1);
+      expect(JSON.parse((await page.evaluate((k) => localStorage.getItem(k), KEY)) ?? 'null')).toEqual({ v: 1, recent: rec, fav });
+      await page.reload();
+      await page.waitForSelector('html.is-ready');
+      await page.waitForTimeout(650);
+      await page.click('#histBtn');
+      expect(await lists(page, 'hRec')).toEqual(rec);
+      expect(await lists(page, 'hFav')).toEqual(fav);
+      // restore the oldest row, then undo and redo from the keyboard
+      await page.locator('#hRec .hrow').nth(2).click();
+      await settle(page);
+      expect(await dockHex(page)).not.toEqual(h2);
+      expect(await toast(page)).toMatch(/^Restaurée : /);
+      await page.keyboard.press('Control+z');
+      await settle(page);
+      expect(await dockHex(page)).toEqual(h2);
+      expect(await toast(page)).toMatch(/^Annulé : /);
+      await page.keyboard.press('Control+Shift+z');
+      await settle(page);
+      expect(await dockHex(page)).not.toEqual(h2);
+      await page.click('#histBtn');
+      await page.click('#hClear');
+      await page.click('#hYes');
+      expect(await page.evaluate((k) => localStorage.getItem(k), KEY)).toBeNull();
+      expect(await page.locator('.hitem').count()).toBe(0);
+      expectClean(s.probe, 2);
+    });
+
+    it('a blocked localStorage: the page works, undo works, the sheet says the history is not saved', async () => {
+      const s = await open({ initScript: `Object.defineProperty(window, 'localStorage', { get() { throw new DOMException('blocked', 'SecurityError'); } });` });
+      const { page } = s;
+      await page.waitForTimeout(650);
+      await page.keyboard.press('Space');
+      await page.waitForTimeout(650);
+      const h1 = await dockHex(page);
+      await page.keyboard.press('Control+z');
+      await settle(page);
+      expect(await dockHex(page)).not.toEqual(h1);
+      await page.click('#histBtn');
+      expect(await page.locator('#hRec .hitem').count()).toBe(2);
+      expect(await page.isVisible('#hWarn')).toBe(true);
+      expectClean(s.probe);
+    });
+
+    it('a hostile stored value leaves an empty list and no error', async () => {
+      const s = await open({ initScript: `try { localStorage.setItem(${JSON.stringify(KEY)}, ${JSON.stringify(JSON.stringify({ v: 1, recent: Array.from({ length: 5000 }, () => '<b>x</b>'), fav: 7 }))}); } catch (e) {}`, https: true });
+      await s.page.waitForTimeout(650);
+      await s.page.click('#histBtn');
+      expect(await s.page.locator('#hFav .hitem').count()).toBe(0);
+      expect(await s.page.locator('#hRec .hitem').count()).toBe(1);
+      expectClean(s.probe);
     });
   });
 });

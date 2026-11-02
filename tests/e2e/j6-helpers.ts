@@ -24,6 +24,8 @@ export type OpenOptions = {
   clipboard?: boolean;
   /** Wide-font check: replaces the font stack of the page (`--sans`, and a wide monospace) through the browser protocol (the CSP forbids style elements). `HUEZZ_FONT=Verdana` forces it for every page of a run. */
   font?: string;
+  /** JavaScript source run in the page before any script of the page (storage tests: blocked, full or hostile `localStorage`). */
+  initScript?: string;
 };
 
 /** Wide font that stands in for the Linux, Windows and Android system fonts. */
@@ -97,6 +99,7 @@ export function useBrowser(): { open(options?: OpenOptions): Promise<Session> } 
           (window as unknown as { __huezzViolation(d: string, b: string): void }).__huezzViolation(e.effectiveDirective, e.blockedURI);
         });
       });
+      if (options.initScript !== undefined) await page.addInitScript({ content: options.initScript });
       page.on('console', (m) => m.type() === 'error' && probe.errors.push(m.text()));
       page.on('pageerror', (e) => probe.errors.push(String(e)));
       await page.goto(url + (options.hash ?? fixedHashFor(options.scheme)));

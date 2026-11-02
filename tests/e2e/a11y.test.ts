@@ -4,17 +4,26 @@ import { parseCss, runAxe, settle, shotsDir, useBrowser, type OpenOptions } from
 
 const { open } = useBrowser();
 
-describe('axe-core: 8 states (system theme x [export menu | contrast dialog] x [1440 | 390]), decor in the accessibility tree', () => {
+describe('axe-core: 12 states (system theme x [export menu | contrast dialog | history sheet] x [1440 | 390]), decor in the accessibility tree', () => {
   for (const scheme of ['light', 'dark'] as const) {
-    for (const what of ['export', 'contrast'] as const) {
+    for (const what of ['export', 'contrast', 'history'] as const) {
       for (const [width, height, touch] of [[1440, 900, false], [390, 844, true]] as const) {
         it(`${scheme}, ${what} open, ${width} px: 0 serious or critical violation`, async () => {
           const s = await open({ scheme, width, height, touch });
           const { page } = s;
-          if (what === 'export') await page.click('#exportBtn');
+          if (what === 'history') {
+            // Three favourites and four recents, so the rows, the strips and the stars are all in the page.
+            for (let i = 0; i < 3; i++) {
+              await page.keyboard.press('Space');
+              await page.waitForTimeout(500);
+            }
+            await page.click('#histBtn');
+            for (const i of [0, 1, 2]) await page.locator('#hRec .hstar').nth(i).click();
+          } else if (what === 'export') await page.click('#exportBtn');
           else await page.click('.pill[data-pair=accent-fond]');
           await settle(page);
-          expect(await page.isVisible(what === 'export' ? '#xmenu' : '#cdlg')).toBe(true);
+          expect(await page.isVisible(what === 'export' ? '#xmenu' : what === 'history' ? '#hmenu' : '#cdlg')).toBe(true);
+          if (what === 'history') expect(await page.locator('#hRec .hitem').count()).toBeGreaterThan(2);
           expect(await page.$eval('#stageWrap', (e) => (e as HTMLElement).inert)).toBe(false);
           const r = await runAxe(page);
           console.log(`axe ${scheme} ${what} ${width}: violations=${JSON.stringify(r.all)} incomplete=${JSON.stringify(r.incomplete)}`);

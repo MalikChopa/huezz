@@ -243,6 +243,29 @@ describe('offline after load, on a fictitious https origin', () => {
     await settle(page);
     expect(await dockHex(page)).toEqual(kept);
     expect(await toastText(page)).toMatch(/Lien invalide|plus récente/);
+
+    // J13: history (localStorage), a star, a restore, undo and redo, Tout effacer: no request either.
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    await page.keyboard.press('Space');
+    await page.waitForTimeout(700);
+    const beforeRestore = await dockHex(page);
+    await page.click('#histBtn');
+    expect(await page.locator('#hRec .hitem').count()).toBeGreaterThan(2);
+    await page.locator('#hRec .hstar').nth(1).click();
+    expect(await page.locator('#hFav .hitem').count()).toBe(1);
+    await page.locator('#hRec .hrow').nth(1).click();
+    await settle(page);
+    expect(await dockHex(page)).not.toEqual(beforeRestore);
+    await page.keyboard.press('Control+z');
+    await settle(page);
+    expect(await dockHex(page)).toEqual(beforeRestore);
+    await page.keyboard.press('Control+y');
+    await settle(page);
+    expect(await dockHex(page)).not.toEqual(beforeRestore);
+    await page.click('#histBtn');
+    await page.click('#hClear');
+    await page.click('#hYes');
+    expect(await page.locator('.hitem').count()).toBe(0);
   }, 120_000);
 
   it('still one request and no failure: the whole session made no network traffic', () => {

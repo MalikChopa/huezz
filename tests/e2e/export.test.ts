@@ -149,11 +149,11 @@ describe('export menu: structure and keyboard', () => {
     const { page } = s;
     await page.focus('#hasard');
     const seen: string[] = [];
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 4; i++) {
       await page.keyboard.press('Tab');
       seen.push(await page.evaluate(() => document.activeElement?.id || (document.activeElement as HTMLElement).dataset.mode || ''));
     }
-    expect(seen).toEqual(['light', 'share', 'exportBtn']);
+    expect(seen).toEqual(['light', 'histBtn', 'share', 'exportBtn']);
     await openMenu(page);
     await page.mouse.click(300, 600);
     expect(await page.isVisible('#xmenu')).toBe(false);

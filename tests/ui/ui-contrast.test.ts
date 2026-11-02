@@ -86,6 +86,20 @@ function table(theme: SystemTheme): Row[] {
     { what: 'export status line (ink) on bg', fg: t.ink, bg: t.bg, min: 4.5 },
     { what: 'export "Copier" / "Télécharger" label (bg) on its ink background', fg: t.bg, bg: t.ink, min: 4.5 },
     { what: 'checkbox "Format 2025.10" mark and frame (ink) on bg', fg: t.ink, bg: t.bg, min: 3 },
+    // J13: history sheet (same dialog background as the export menu)
+    { what: 'history row name (ink) on the dialog background (bg)', fg: t.ink, bg: t.bg, min: 4.5 },
+    { what: 'history row name (ink) on its hover background (panel)', fg: t.ink, bg: t.panel, min: 4.5 },
+    { what: 'history row harmony (muted) on bg', fg: t.muted, bg: t.bg, min: 4.5 },
+    { what: 'history row harmony (muted) on its hover background (panel)', fg: t.muted, bg: t.panel, min: 4.5 },
+    { what: 'history section titles, empty states and note (muted) on bg', fg: t.muted, bg: t.bg, min: 4.5 },
+    { what: 'history star outline (muted) on bg', fg: t.muted, bg: t.bg, min: 3 },
+    { what: 'history star outline (muted) on its hover background (panel)', fg: t.muted, bg: t.panel, min: 3 },
+    { what: 'history star pressed, filled (ink) on bg', fg: t.ink, bg: t.bg, min: 3 },
+    { what: 'history star pressed, filled (ink) on its hover background (panel)', fg: t.ink, bg: t.panel, min: 3 },
+    { what: 'history colour strip edge (line-control) on bg', fg: t.lineControl, bg: t.bg, min: 3 },
+    { what: 'history "not saved" hint (ink) and its frame on bg', fg: t.ink, bg: t.bg, min: 4.5 },
+    { what: 'history "Effacer" label (bg) on its ink background', fg: t.bg, bg: t.ink, min: 4.5 },
+    { what: 'history button border (line-control) on the bar background (bg)', fg: t.lineControl, bg: t.bg, min: 3 },
   ];
   for (const mode of THEMES) {
     const accent = state.theme[mode].accent;
@@ -215,6 +229,18 @@ describe('J5: the export menu and the share button use the audited tokens (tool.
     ['.xfoot', [/color:var\(--ui-muted\)/]],
     ['.xstatus', [/color:var\(--ui-ink\)/]],
     ['.cdlg', [/border:1px solid var\(--ui-line-control\)/, /background:var\(--ui-bg\)/, /color:var\(--ui-ink\)/]],
+    // J13: history sheet
+    ['#histBtn', [/border-color:var\(--ui-line-control\)/]],
+    ['.hmenu h3', [/color:var\(--ui-muted\)/]],
+    ['.hrow', [/color:var\(--ui-ink\)/, /background:none/]],
+    ['.hrow:hover', [/background:var\(--ui-panel\)/]],
+    ['.hstrip', [/border:1px solid var\(--ui-line-control\)/]],
+    ['.hname small', [/color:var\(--ui-muted\)/]],
+    ['.hstar', [/color:var\(--ui-muted\)/, /background:none/]],
+    ['.hstar:hover', [/background:var\(--ui-panel\)/, /color:var\(--ui-ink\)/]],
+    ['.hstar[aria-pressed=true]', [/color:var\(--ui-ink\)/]],
+    ['.hempty', [/color:var\(--ui-muted\)/]],
+    ['.hwarn', [/border:1.5px solid var\(--ui-ink\)/]],
   ];
   for (const [selector, patterns] of cases) {
     it(`${selector} uses the audited tokens`, () => {

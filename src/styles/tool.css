@@ -80,6 +80,7 @@ kbd{font:500 11px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
 /* Bar actions and export menu (non-modal dialog) */
 .acts{display:flex;gap:8px}
 #share{border-color:var(--ui-line-control)}
+#histBtn{border-color:var(--ui-line-control)}
 .cdlg.xmenu{top:68px;right:20px;width:440px;max-width:calc(100vw - 24px);max-height:calc(100vh - 80px);max-height:calc(100dvh - 80px);border-radius:18px;--cd-pad:14px}
 .xfmt{display:grid;grid-template-columns:repeat(6,auto);gap:4px;margin-bottom:12px}
 .xfmt button,.xopt button{height:32px;padding:0 10px;font-size:12.5px;font-weight:560;border-radius:999px;border:1px solid var(--ui-line-control);background:var(--ui-bg);color:var(--ui-ink)}
@@ -101,6 +102,30 @@ kbd{font:500 11px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
 .xstatus{margin:8px 4px 0;font-size:12.5px;color:var(--ui-ink)}
 .xstatus:empty{display:none}
 .xfoot{margin:10px 4px 0;font-size:12px;color:var(--ui-muted)}
+
+/* History sheet (F4): same sheet as the export menu (class xmenu); rows are real buttons, the 7-colour strip is an inline SVG whose fills are attributes (no style attribute). */
+.hmenu h3{margin:0 0 6px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ui-muted)}
+.hsec{margin-top:14px}
+.hlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.hitem{display:flex;align-items:center;gap:4px}
+.hrow{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:12px;min-height:52px;padding:6px 10px 6px 8px;border-radius:12px;border:1px solid transparent;background:none;color:var(--ui-ink);text-align:left}
+.hrow:hover{background:var(--ui-panel);border-color:var(--ui-line)}
+.hstrip{width:112px;height:32px;flex:none;border-radius:8px;border:1px solid var(--ui-line-control);overflow:hidden}
+.hname{display:flex;flex-direction:column;min-width:0}
+.hname b{font-size:13.5px;font-weight:600;overflow-wrap:anywhere}
+.hname small{font-size:12px;color:var(--ui-muted);overflow-wrap:anywhere}
+.hstar{flex:none;width:40px;height:40px;display:grid;place-items:center;border:0;border-radius:50%;background:none;color:var(--ui-muted)}
+.hstar:hover{background:var(--ui-panel);color:var(--ui-ink)}
+.hstar svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linejoin:round}
+.hstar[aria-pressed=true]{color:var(--ui-ink)}
+.hstar[aria-pressed=true] svg{fill:currentColor}
+.hempty{margin:0;font-size:13px;color:var(--ui-muted)}
+.hwarn{margin:10px 0 0;padding:10px 12px;border-radius:12px;border:1.5px solid var(--ui-ink);font-size:13px;line-height:1.4}
+.hfoot{margin-top:14px;padding-top:10px;border-top:1px solid var(--ui-line)}
+.hfoot .xfoot{margin:0 0 10px}
+.hclear,.hask{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.hask{font-size:13px;font-weight:560}
+.hempty[hidden],.hwarn[hidden],.hask[hidden],#hClear[hidden],.hfoot .xfoot[hidden]{display:none}
 
 /* Scene area (the mock-ups themselves are in mockups.css) */
 .scene-area{position:relative;min-height:calc(100vh - 60px);display:flex;flex-direction:column;padding:26px 40px 148px;
@@ -239,6 +264,20 @@ kbd{font:500 11px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
   .btn kbd{display:none}
   #hasard{padding:0 14px}
 }
+/* Three labelled actions need about 1200 px with a wide font: icon-only from 961 to 1200 px, labels beyond. */
+@media (min-width:961px) and (max-width:1200px){
+  .btn-lbl{display:none}
+  .acts .btn{width:36px;padding:0}
+}
+/* Three icon buttons on the right need a little more room in a narrow desktop window with a wide font. */
+@media (min-width:761px) and (max-width:960px){
+  .bar{padding:0 12px;gap:6px}
+  .ctrls,.acts{gap:6px}
+  .chip-base input[type=text]{width:66px}
+  .sel select{padding:0 28px 0 10px}
+  .sel::after{right:12px}
+  #hasard{padding:0 10px}
+}
 @media (max-width:760px){
   .bar{flex-wrap:wrap;height:auto;padding:calc(10px + env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 10px max(14px,env(safe-area-inset-left));gap:10px}
   .ctrls{display:contents}
@@ -251,15 +290,18 @@ kbd{font:500 11px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
   .sel select.is-tight{letter-spacing:-.05em;padding:0 25px 0 8px}
   .btn{height:44px}
   .acts .btn{width:44px}
-  #hasard{flex:1 1 auto;padding:0 16px}
+  #hasard{flex:1 1 auto;padding:0 12px}
   .seg{padding:0;border:0;box-shadow:inset 0 0 0 1px var(--ui-line-control)}
   .seg button{width:44px;height:44px}
-  .acts{gap:10px}
+  .acts{gap:4px}
   .cdlg,.cdlg.xmenu{left:max(8px,env(safe-area-inset-left));right:max(8px,env(safe-area-inset-right));top:auto;bottom:calc(8px + env(safe-area-inset-bottom));width:auto;max-width:none;max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px - env(safe-area-inset-bottom));--cd-pad:14px;border-radius:20px;overscroll-behavior:contain}
   .cdlg-x{width:44px;height:44px;margin:-8px -8px -8px 0}
   .xfmt{grid-template-columns:repeat(3,1fr)}
   .xfmt button,.xopt button{height:44px;font-size:14px}
   .xcheck{min-height:44px}
+  .hstar{width:44px;height:44px}
+  .hstrip{width:84px}
+  .hfoot .btn{height:44px}
   .xcheck input{width:24px;height:24px}
   #xOut{height:150px;font-size:16px}
   .scene-area{padding:18px 16px calc(132px + env(safe-area-inset-bottom));min-height:0}
@@ -300,8 +342,8 @@ kbd{font:500 11px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
 /* Windows high contrast: system colours; palette swatches keep their colours, selected states use Highlight. */
 @media (forced-colors:active){
   :focus-visible{outline:3px solid Highlight;box-shadow:none}
-  .stage-wrap,.sw,.pill-dot,.chip,.cdlg-sample,.brand-mark,.chip-base input[type=color],.xpng canvas{forced-color-adjust:none}
-  .btn,.sel select,.seg,.pill,.cdlg,.cdlg-x,.xfmt button,.xopt button,.chip-base,.dock,.base-err,.sw-lock::after{border:1px solid CanvasText}
+  .stage-wrap,.sw,.pill-dot,.chip,.cdlg-sample,.brand-mark,.chip-base input[type=color],.xpng canvas,.hstrip{forced-color-adjust:none}
+  .btn,.sel select,.seg,.pill,.cdlg,.cdlg-x,.xfmt button,.xopt button,.chip-base,.dock,.base-err,.sw-lock::after,.hwarn{border:1px solid CanvasText}
   .sw{border:1px solid CanvasText;box-shadow:none}
   .seg button[aria-pressed=true],.xfmt button[aria-checked=true],.xopt button[aria-checked=true],.pill.fail{background:Highlight;color:HighlightText;forced-color-adjust:none}
   .pill.fail .pill-lv{background:HighlightText;color:Highlight}

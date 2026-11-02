@@ -30,6 +30,7 @@ Demo: <https://malikchopa.github.io/huezz/>.
 8. A share link: the whole palette is in the address (the part after `#`).
 9. One-click copy of any colour (Enter on the keyboard) and of the export text.
 10. Keyboard use and a phone layout.
+11. History of your last 20 palettes, favourites (a star), and undo / redo (Cmd or Ctrl+Z). Kept only in this browser, on this device; a button clears everything.
 
 The first palette is random at every visit; a share link restores a palette exactly (the 14 colours and the locks are stored in it).
 
@@ -56,12 +57,12 @@ Not verified: the Tailwind outputs were not compiled with Tailwind, and the Figm
 
 ### Privacy
 
-Nothing is sent anywhere: no account, no server, no statistics. The source uses no cookie and no browser storage. The page is a single HTML file with its CSS and JavaScript inline, and a Content Security Policy (in a `<meta>` tag, hash based) that forbids network requests from the page and inline `style` attributes. After loading, every feature works offline (a test cuts the network and uses them all; reloading while offline depends on the browser cache, there is no service worker). The share link keeps the palette in the part after `#`, which browsers do not send to servers.
+Nothing is sent anywhere: no account, no server, no statistics. The source uses no cookie. The only thing it keeps in the browser is your own history of palettes (see below): it stays on your device and is never sent anywhere. The page is a single HTML file with its CSS and JavaScript inline, and a Content Security Policy (in a `<meta>` tag, hash based) that forbids network requests from the page and inline `style` attributes. After loading, every feature works offline (a test cuts the network and uses them all; reloading while offline depends on the browser cache, there is no service worker). The share link keeps the palette in the part after `#`, which browsers do not send to servers.
 
 ### Measured numbers (author's Mac, Apple M5, 2026-11-01)
 
-- Page: `dist/index.html` is 110 178 bytes, 32 471 bytes gzipped (`npm run size`).
-- Tests: 535 unit tests (55 of them for the release scripts) and 266 end-to-end tests (of which 30 in WebKit and 6 offline); `npm test` and `npm run e2e` run in this repository on 2026-11-02.
+- Page: `dist/index.html` is 121 517 bytes, 35 795 bytes gzipped (`npm run size`).
+- Tests: 610 unit tests (55 of them for the release scripts) and 303 end-to-end tests (WebKit engine and offline tests included); `npm test` and `npm run e2e` run in this repository on 2026-11-02.
 - Smoothness while dragging the colour picker (120 input events, Chrome headless, 1440 x 900): handler plus render p95 of 0.6 to 1.3 ms, and 1.6 to 2.6 ms with the CPU slowed 4 times (several runs; the upper end varies with machine load); 0 long task. Measured on desktop Chrome only, not on a phone.
 
 ### Install and run
@@ -126,6 +127,7 @@ Démo : <https://malikchopa.github.io/huezz/>.
 8. Un lien de partage : toute la palette est dans l'adresse (la partie après `#`).
 9. Copie en un clic d'une couleur (Entrée au clavier) et du texte d'export.
 10. Utilisation au clavier et mise en page pour téléphone.
+11. Historique de tes 20 dernières palettes, favoris (une étoile), annuler / rétablir (Cmd ou Ctrl+Z). Gardé uniquement dans ce navigateur, sur cet appareil ; un bouton efface tout.
 
 La première palette est aléatoire à chaque visite ; un lien de partage restitue une palette à l'identique (les 14 couleurs et les verrous y sont inscrits).
 
@@ -152,12 +154,12 @@ Non vérifié : les sorties Tailwind n'ont pas été compilées avec Tailwind, e
 
 ### Vie privée
 
-Rien n'est envoyé nulle part : pas de compte, pas de serveur, pas de statistiques. Le code source n'utilise ni cookie ni stockage du navigateur. La page est un seul fichier HTML avec son CSS et son JavaScript en ligne, et une politique de sécurité de contenu (CSP, dans une balise `<meta>`, par empreintes) qui interdit les requêtes réseau depuis la page et les attributs `style` en ligne. Une fois la page chargée, toutes les fonctions marchent hors ligne (un test coupe le réseau et les utilise toutes ; recharger hors ligne dépend du cache du navigateur, il n'y a pas de service worker). Le lien de partage garde la palette dans la partie après `#`, que les navigateurs n'envoient pas aux serveurs.
+Rien n'est envoyé nulle part : pas de compte, pas de serveur, pas de statistiques. Le code source n'utilise aucun cookie. La seule chose gardée dans le navigateur est ton historique de palettes (voir plus bas) : il reste sur ton appareil et n'est jamais envoyé. La page est un seul fichier HTML avec son CSS et son JavaScript en ligne, et une politique de sécurité de contenu (CSP, dans une balise `<meta>`, par empreintes) qui interdit les requêtes réseau depuis la page et les attributs `style` en ligne. Une fois la page chargée, toutes les fonctions marchent hors ligne (un test coupe le réseau et les utilise toutes ; recharger hors ligne dépend du cache du navigateur, il n'y a pas de service worker). Le lien de partage garde la palette dans la partie après `#`, que les navigateurs n'envoient pas aux serveurs.
 
 ### Chiffres mesurés (Mac de l'auteur, Apple M5, 2026-11-01)
 
-- Page : `dist/index.html` fait 110 178 octets, 32 471 octets compressés en gzip (`npm run size`).
-- Tests : 535 tests unitaires (dont 55 pour les scripts de livraison) et 266 tests de bout en bout (dont 30 dans WebKit et 6 hors ligne) ; `npm test` et `npm run e2e` lancés dans ce dépôt le 2026-11-02.
+- Page : `dist/index.html` fait 121 517 octets, 35 795 octets compressés en gzip (`npm run size`).
+- Tests : 610 tests unitaires (dont 55 pour les scripts de livraison) et 303 tests de bout en bout (moteur WebKit et tests hors ligne compris) ; `npm test` et `npm run e2e` lancés dans ce dépôt le 2026-11-02.
 - Fluidité pendant le glissement du sélecteur de couleur (120 événements, Chrome sans fenêtre, 1440 x 900) : gestionnaire plus rendu, p95 de 0,6 à 1,3 ms, et de 1,6 à 2,6 ms avec le processeur ralenti 4 fois (plusieurs passes ; le haut de la plage varie avec la charge de la machine) ; 0 tâche longue. Mesuré sur Chrome de bureau seulement, pas sur téléphone.
 
 ### Installer et lancer

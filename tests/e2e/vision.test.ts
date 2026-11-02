@@ -114,7 +114,11 @@ describe('what is filtered, what is not', () => {
     await page.selectOption('#vision', 'deutan');
     await page.waitForTimeout(900);
     expect(await page.evaluate(() => location.href)).toBe(address);
-    expect(await page.evaluate(() => { try { return localStorage.length + sessionStorage.length; } catch { return 0; } })).toBe(0);
+    // J13: the palette history is the only thing the page keeps (key huezz.history.v1, links only); the Vision choice is in none of it.
+    expect(await page.evaluate(() => sessionStorage.length)).toBe(0);
+    const kept = await page.evaluate(() => Object.fromEntries(Object.entries(localStorage)));
+    expect(Object.keys(kept).every((k) => k === 'huezz.history.v1')).toBe(true);
+    expect(JSON.stringify(kept)).not.toMatch(/vision|protan|deutan|tritan/i);
     expect(await page.$$eval('[style]', (els) => els.length), 'no style="" attribute (CSP)').toBe(0);
     expect(await page.textContent('#live')).toMatch(/^Aperçu simulé, deutéranopie, simulation approchée : les contrastes et les exports restent ceux de la vraie palette\s*$/);
     expect(await page.innerText('#visionNote')).toBe('Simulation approchée : contrastes et exports inchangés (palette réelle).');

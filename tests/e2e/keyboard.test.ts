@@ -35,7 +35,7 @@ async function tabSequence(page: Page, max = 40): Promise<string[]> {
 }
 
 describe('tab order (section 6), accessible names from the engine', () => {
-  it('1440 px: skip link, base colour, hex, harmony, Hasard, mode, Partager, Exporter, 6 pills, dock (one stop), lock (one stop), then out of the page', async () => {
+  it('1440 px: skip link, base colour, hex, harmony, Hasard, mode, Historique, Partager, Exporter, 6 pills, dock (one stop), lock (one stop), then out of the page', async () => {
     const { page } = await open();
     const seq = await tabSequence(page);
     expect(seq).toEqual([
@@ -45,6 +45,7 @@ describe('tab order (section 6), accessible names from the engine', () => {
       'combobox "Harmonie"',
       'button "Hasard"',
       'button "Palette claire" [pressed]',
+      'button "Historique"',
       'button "Partager"',
       'button "Exporter"',
       'combobox "Vision"',
@@ -57,13 +58,13 @@ describe('tab order (section 6), accessible names from the engine', () => {
   it('390 px with touch emulation: the same order without the hex field (hidden under 760 px)', async () => {
     const { page } = await open({ width: 390, height: 844, touch: true });
     const seq = await tabSequence(page);
-    expect(seq.length).toBe(16);
+    expect(seq.length).toBe(17);
     expect(seq[0]).toBe('link "Aller à l\'aperçu"');
     expect(seq[1]).toBe('textbox "Choisir la couleur de base"');
-    expect(seq.slice(2, 7)).toEqual(['combobox "Harmonie"', 'button "Hasard"', 'button "Palette claire" [pressed]', 'button "Partager"', 'button "Exporter"']);
-    expect(seq[7]).toBe('combobox "Vision"');
-    expect(seq.slice(8, 14).map((l) => l.replace(/^button "/, '').split(' : ')[0])).toEqual(['Texte sur fond', 'Texte sur surface', 'Accent sur fond', 'Succès sur surface', 'Alerte sur surface', 'Accent secondaire sur fond']);
-    expect(seq.slice(14)).toEqual(['button "Fond #E7F2EF, copier le code"', 'button "Verrouiller Fond"']);
+    expect(seq.slice(2, 8)).toEqual(['combobox "Harmonie"', 'button "Hasard"', 'button "Palette claire" [pressed]', 'button "Historique"', 'button "Partager"', 'button "Exporter"']);
+    expect(seq[8]).toBe('combobox "Vision"');
+    expect(seq.slice(9, 15).map((l) => l.replace(/^button "/, '').split(' : ')[0])).toEqual(['Texte sur fond', 'Texte sur surface', 'Accent sur fond', 'Succès sur surface', 'Alerte sur surface', 'Accent secondaire sur fond']);
+    expect(seq.slice(15)).toEqual(['button "Fond #E7F2EF, copier le code"', 'button "Verrouiller Fond"']);
   });
 
   it('shift+Tab goes back through the same stops; no stop is inside the mock-ups', async () => {
@@ -263,10 +264,13 @@ describe('keyboard operation (1440 and 390 with touch)', () => {
 
     it(`${label}: no keyboard trap: with each dialog open, Tab leaves it and the cycle comes back to the start`, async () => {
       const { page } = await open(opts);
-      for (const opener of ['export', 'contrast', 'none'] as const) {
+      for (const opener of ['export', 'contrast', 'history', 'none'] as const) {
         await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
         if (opener === 'export') {
           await page.locator('#exportBtn').focus();
+          await page.keyboard.press('Enter');
+        } else if (opener === 'history') {
+          await page.locator('#histBtn').focus();
           await page.keyboard.press('Enter');
         } else if (opener === 'contrast') {
           await page.locator('.pill[data-pair=accent-fond]').focus();
@@ -282,7 +286,7 @@ describe('keyboard operation (1440 and 390 with touch)', () => {
         const seen: string[] = [];
         seen.push(await page.evaluate(() => {
           const a = document.activeElement as Element;
-          return `${a.id || a.className || a.tagName}|${a.closest('#xmenu, #cdlg') !== null ? 'in' : 'page'}`;
+          return `${a.id || a.className || a.tagName}|${a.closest('#xmenu, #cdlg, #hmenu') !== null ? 'in' : 'page'}`;
         }));
         let left = false;
         for (let i = 0; i < 60; i++) {
@@ -290,7 +294,7 @@ describe('keyboard operation (1440 and 390 with touch)', () => {
           const state = await page.evaluate(() => {
             const a = document.activeElement;
             if (a === null || a === document.body) return 'out';
-            return `${a.id || a.className || a.tagName}|${a.closest('#xmenu, #cdlg') !== null ? 'in' : 'page'}`;
+            return `${a.id || a.className || a.tagName}|${a.closest('#xmenu, #cdlg, #hmenu') !== null ? 'in' : 'page'}`;
           });
           if (state === 'out') {
             left = true;
