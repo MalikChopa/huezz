@@ -12,7 +12,7 @@
 
 *The GIF above (10 s): five presses of Random (the palette and the three mock-ups change live), one harmony change, the dark palette, the contrast detail of a pair, then the export menu on CSS and Swift. The interface is in French only; there is no translation yet.*
 
-Demo: <https://malikchopa.github.io/huezz/> (**available only once GitHub Pages is enabled on the repository; not online yet**).
+Demo: <https://malikchopa.github.io/huezz/>.
 
 | Light | Dark | Phone (390 px) |
 |---|---|---|
@@ -108,7 +108,7 @@ MIT, see [LICENSE](LICENSE). Copyright (c) 2026 Chopa.
 
 *Le GIF en haut (10 s) : cinq appuis sur Hasard (la palette et les trois maquettes changent en direct), un changement d'harmonie, la palette sombre, le détail du contraste d'une paire, puis le menu d'export sur CSS et Swift. L'interface est en français seulement ; il n'y a pas de traduction pour l'instant.*
 
-Démo : <https://malikchopa.github.io/huezz/> (**disponible seulement quand GitHub Pages sera activé sur le dépôt ; pas encore en ligne**).
+Démo : <https://malikchopa.github.io/huezz/>.
 
 | Clair | Sombre | Téléphone (390 px) |
 |---|---|---|
