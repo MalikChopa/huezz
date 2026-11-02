@@ -39,17 +39,32 @@ export async function forceFont(context: BrowserContext, page: Page, family: str
   await cdp.send('CSS.enable');
   const { frameTree } = await cdp.send('Page.getFrameTree');
   const { styleSheetId } = await cdp.send('CSS.createStyleSheet', { frameId: frameTree.frame.id });
-  const text = [
-    `@font-face{font-family:"Wide";src:local("${family}");font-weight:100 500}`,
-    `@font-face{font-family:"Wide";src:local("${family} Bold");font-weight:501 900}`,
-    ':root{--sans:"Wide",sans-serif}',
-  ].join('');
-  await cdp.send('CSS.setStyleSheetText', { styleSheetId, text });
-  await page.evaluate(async () => {
-    await document.fonts.load('550 16px Wide');
-    window.dispatchEvent(new Event('resize'));
-  });
+  // Verdana is on Mac and Windows; the Linux runner has DejaVu Sans (the font that broke the layout there). A source that is not installed makes the font load fail: the next candidate is tried.
+  const tried: string[] = [];
+  for (const candidate of [family, ...WIDE_FONT_FALLBACKS]) {
+    const text = [
+      `@font-face{font-family:"Wide";src:local("${candidate}");font-weight:100 500}`,
+      `@font-face{font-family:"Wide";src:local("${candidate} Bold");font-weight:501 900}`,
+      ':root{--sans:"Wide",sans-serif}',
+    ].join('');
+    await cdp.send('CSS.setStyleSheetText', { styleSheetId, text });
+    const loaded = await page.evaluate(async () => {
+      try {
+        await document.fonts.load('550 16px Wide');
+        await document.fonts.load('400 16px Wide');
+        window.dispatchEvent(new Event('resize'));
+        return true;
+      } catch {
+        return false;
+      }
+    });
+    if (loaded) return;
+    tried.push(candidate);
+  }
+  throw new Error(`forceFont: none of these fonts is installed (with its Bold): ${tried.join(', ')}`);
 }
+
+const WIDE_FONT_FALLBACKS = ['DejaVu Sans', 'Verdana'];
 
 /** One Chrome per test file, closed afterwards; each `open` gives a fresh context watched for CSP violations and console errors. */
 export function useBrowser(): { open(options?: OpenOptions): Promise<Session> } {

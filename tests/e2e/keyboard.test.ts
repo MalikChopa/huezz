@@ -269,15 +269,19 @@ describe('keyboard operation (1440 and 390 with touch)', () => {
         } else if (opener === 'contrast') {
           await page.locator('.pill[data-pair=accent-fond]').focus();
           await page.keyboard.press('Enter');
+        } else {
+          // Nothing open: the walk starts from the first stop of the page (Tab goes on from the last focused element, so after the dialogs above it would only cover the end of the page).
+          await page.evaluate(() => {
+            const first = document.querySelector<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex="0"]');
+            first?.focus();
+          });
         }
-        // The stop where the walk starts counts too: after the contrast dialog opens, the focus is on its own button, and Chrome does not behave the same everywhere when Tab runs off the end of the page (on a Mac it comes back to the top once before leaving, on Linux it leaves at once).
+        // The stop where the walk starts counts too: after a dialog opens, the focus is on its own button, and Chrome does not behave the same everywhere when Tab runs off the end of the page (on a Mac it comes back to the top once before leaving, on Linux it leaves at once).
         const seen: string[] = [];
-        if (opener !== 'none') {
-          seen.push(await page.evaluate(() => {
-            const a = document.activeElement as Element;
-            return `${a.id || a.className || a.tagName}|${a.closest('#xmenu, #cdlg') !== null ? 'in' : 'page'}`;
-          }));
-        }
+        seen.push(await page.evaluate(() => {
+          const a = document.activeElement as Element;
+          return `${a.id || a.className || a.tagName}|${a.closest('#xmenu, #cdlg') !== null ? 'in' : 'page'}`;
+        }));
         let left = false;
         for (let i = 0; i < 60; i++) {
           await page.keyboard.press('Tab');
