@@ -30,7 +30,8 @@ Demo: <https://malikchopa.github.io/huezz/>.
 8. A share link: the whole palette is in the address (the part after `#`).
 9. One-click copy of any colour (Enter on the keyboard) and of the export text.
 10. Keyboard use and a phone layout.
-11. History of your last 20 palettes, favourites (a star), and undo / redo (Cmd or Ctrl+Z). Kept only in this browser, on this device; a button clears everything.
+11. A palette from an image: drop, paste or pick a picture and get 3 to 5 candidate palettes to choose from. The image is read in the page only: it is never sent anywhere and never stored.
+12. History of your last 20 palettes, favourites (a star), and undo / redo (Cmd or Ctrl+Z). Kept only in this browser, on this device; a button clears everything.
 
 The first palette is random at every visit; a share link restores a palette exactly (the 14 colours and the locks are stored in it).
 
@@ -61,8 +62,8 @@ Nothing is sent anywhere: no account, no server, no statistics. The source uses 
 
 ### Measured numbers (author's Mac, Apple M5, 2026-11-01)
 
-- Page: `dist/index.html` is 121 722 bytes, 35 881 bytes gzipped (`npm run size`).
-- Tests: 610 unit tests (55 of them for the release scripts) and 311 end-to-end tests (WebKit engine and offline tests included); `npm test` and `npm run e2e` run in this repository on 2026-11-02.
+- Page: `dist/index.html` is 134 401 bytes, 39 672 bytes gzipped (`npm run size`).
+- Tests: 686 unit tests (55 of them for the release scripts) and 360 end-to-end tests (WebKit engine and offline tests included); `npm test` and `npm run e2e` run in this repository on 2026-11-02.
 - Smoothness while dragging the colour picker (120 input events, Chrome headless, 1440 x 900): handler plus render p95 of 0.6 to 1.3 ms, and 1.6 to 2.6 ms with the CPU slowed 4 times (several runs; the upper end varies with machine load); 0 long task. Measured on desktop Chrome only, not on a phone.
 
 ### Install and run
@@ -127,7 +128,8 @@ Démo : <https://malikchopa.github.io/huezz/>.
 8. Un lien de partage : toute la palette est dans l'adresse (la partie après `#`).
 9. Copie en un clic d'une couleur (Entrée au clavier) et du texte d'export.
 10. Utilisation au clavier et mise en page pour téléphone.
-11. Historique de tes 20 dernières palettes, favoris (une étoile), annuler / rétablir (Cmd ou Ctrl+Z). Gardé uniquement dans ce navigateur, sur cet appareil ; un bouton efface tout.
+11. Une palette depuis une image : dépose, colle ou choisis une image et obtiens 3 à 5 palettes candidates à choisir. L'image est lue dans la page seulement : elle n'est jamais envoyée ni enregistrée.
+12. Historique de tes 20 dernières palettes, favoris (une étoile), annuler / rétablir (Cmd ou Ctrl+Z). Gardé uniquement dans ce navigateur, sur cet appareil ; un bouton efface tout.
 
 La première palette est aléatoire à chaque visite ; un lien de partage restitue une palette à l'identique (les 14 couleurs et les verrous y sont inscrits).
 
@@ -158,8 +160,8 @@ Rien n'est envoyé nulle part : pas de compte, pas de serveur, pas de statistiqu
 
 ### Chiffres mesurés (Mac de l'auteur, Apple M5, 2026-11-01)
 
-- Page : `dist/index.html` fait 121 722 octets, 35 881 octets compressés en gzip (`npm run size`).
-- Tests : 610 tests unitaires (dont 55 pour les scripts de livraison) et 311 tests de bout en bout (moteur WebKit et tests hors ligne compris) ; `npm test` et `npm run e2e` lancés dans ce dépôt le 2026-11-02.
+- Page : `dist/index.html` fait 134 401 octets, 39 672 octets compressés en gzip (`npm run size`).
+- Tests : 686 tests unitaires (dont 55 pour les scripts de livraison) et 360 tests de bout en bout (moteur WebKit et tests hors ligne compris) ; `npm test` et `npm run e2e` lancés dans ce dépôt le 2026-11-02.
 - Fluidité pendant le glissement du sélecteur de couleur (120 événements, Chrome sans fenêtre, 1440 x 900) : gestionnaire plus rendu, p95 de 0,6 à 1,3 ms, et de 1,6 à 2,6 ms avec le processeur ralenti 4 fois (plusieurs passes ; le haut de la plage varie avec la charge de la machine) ; 0 tâche longue. Mesuré sur Chrome de bureau seulement, pas sur téléphone.
 
 ### Installer et lancer

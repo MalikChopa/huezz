@@ -5,6 +5,7 @@ import { fromOklch } from '../../src/core/gamut';
 import { initialState } from '../../src/state/state';
 import { encodeHash } from '../../src/state/url';
 import type { Mode } from '../../src/palette/roles';
+import { fourColours, outcome, pick, png } from './image-helpers';
 import { WIDE_FONT, settle, useBrowser, type OpenOptions } from './j6-helpers';
 
 /**
@@ -99,6 +100,28 @@ describe('wide font: the document never overflows', () => {
       const cut = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('#hmenu .hname, #hmenu .hname b, #hmenu .hname small, #hmenu .hfoot button, #hmenu .hask')].filter((e) => e.scrollWidth > e.clientWidth + 1).map((e) => e.className || e.id));
       expect(cut, 'history: no text clipped').toEqual([]);
       expect(await page.$eval('#hmenu', (e) => e.getBoundingClientRect().right), 'history: the sheet is in the window').toBeLessThanOrEqual(width);
+      // J15: the image sheet, empty, with an error message (the longest one), and with candidates whose texts are the longest of the app (a name of two long words, the longest harmony).
+      await page.keyboard.press('Escape');
+      await page.click('#imgBtn');
+      await check('image, empty');
+      await pick(page, { name: 'IMG.HEIC', mimeType: 'image/heic', buffer: Buffer.concat([Buffer.from([0, 0, 0, 24]), Buffer.from('ftypheic'), Buffer.alloc(16)]) });
+      expect((await outcome(page)).message).toMatch(/^Ce format d'image/);
+      await check('image, message');
+      await pick(page, png('four.png', fourColours()));
+      expect((await outcome(page)).cards).toBeGreaterThanOrEqual(3);
+      await page.evaluate(() => {
+        for (const card of document.querySelectorAll('#iList .icard')) {
+          (card.querySelector('b') as HTMLElement).textContent = 'Porcelaine turquoise';
+          (card.querySelector('small') as HTMLElement).textContent = 'Split-complémentaire';
+        }
+      });
+      await settle(page);
+      await check('image, candidates');
+      const cutImage = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('#imenu .hname, #imenu .hname b, #imenu .hname small, #imenu .iuse, #imenu .idrop, #imenu .idrop b, #imenu .idrop span, #imenu .imsg, #imenu #iCount, #imenu #iNote')].filter((e) => e.scrollWidth > e.clientWidth + 1).map((e) => e.className || e.id));
+      expect(cutImage, 'image: no text clipped').toEqual([]);
+      const box = await page.$eval('#imenu', (e) => { const r = e.getBoundingClientRect(); return { left: r.left, right: r.right }; });
+      expect(box.right, 'image: the sheet is in the window').toBeLessThanOrEqual(width);
+      expect(box.left, 'image: the sheet is in the window').toBeGreaterThanOrEqual(0);
       expect(s.probe.errors).toEqual([]);
     });
   }
@@ -106,8 +129,9 @@ describe('wide font: the document never overflows', () => {
 
 describe('wide font: the bar on a phone', () => {
   for (const [width, maxLines] of [
-    [390, 2],
-    [414, 2],
+    [390, 3],
+    [414, 3],
+    [430, 2],
     [480, 2],
     [600, 2],
     [320, 3],
@@ -116,7 +140,7 @@ describe('wide font: the bar on a phone', () => {
       const { page } = await open(wide(width, 800));
       await expectWideFont(page);
       const bar = await page.evaluate(() => {
-        const items = [...document.querySelectorAll('.bar .brand, .bar #base, .bar #harm, .bar #hasard, .bar .seg, .bar #histBtn, .bar #share, .bar #exportBtn')];
+        const items = [...document.querySelectorAll('.bar .brand, .bar #base, .bar #harm, .bar #hasard, .bar .seg, .bar #imgBtn, .bar #histBtn, .bar #share, .bar #exportBtn')];
         const centres = items.map((e) => { const r = e.getBoundingClientRect(); return r.top + r.height / 2; }).sort((a, b) => a - b);
         const tops = new Set<number>();
         let line = -100;
@@ -128,12 +152,11 @@ describe('wide font: the bar on a phone', () => {
         return { lines: tops.size, minLeft: Math.min(...rects.map((r) => r.left)), maxRight: Math.max(...rects.map((r) => r.right)), vw: innerWidth };
       });
       expect(bar.lines).toBeLessThanOrEqual(maxLines);
-      if (width === 390) expect(bar.lines).toBe(2);
       expect(bar.minLeft).toBeGreaterThanOrEqual(0);
       expect(bar.maxRight).toBeLessThanOrEqual(bar.vw);
       const clipped = await page.evaluate(() => {
         const bad: string[] = [];
-        for (const e of document.querySelectorAll<HTMLElement>('.bar .brand, .bar #hasard, .bar #histBtn, .bar #share, .bar #exportBtn')) {
+        for (const e of document.querySelectorAll<HTMLElement>('.bar .brand, .bar #hasard, .bar #imgBtn, .bar #histBtn, .bar #share, .bar #exportBtn')) {
           if (e.scrollWidth > e.clientWidth + 1) bad.push(`${e.id || e.className}: ${e.scrollWidth} > ${e.clientWidth}`);
         }
         const sel = document.querySelector('#harm') as HTMLSelectElement;

@@ -16,6 +16,7 @@ import { initExportDialog } from './export-dialog';
 import { initHarmonyFit } from './harmony-fit';
 import { initHashSync } from './hash-sync';
 import { initHistoryDialog } from './history-dialog';
+import { initImageDialog } from './image-dialog';
 import { factsOf, keyIntent } from './keyboard';
 import { createRenderer, fillHarmonies } from './render';
 import { initShare } from './share';
@@ -42,6 +43,7 @@ let dialog: ReturnType<typeof initContrastDialog> | null = null;
 let exporter: ReturnType<typeof initExportDialog> | null = null;
 let sync: ReturnType<typeof initHashSync> | null = null;
 let past: ReturnType<typeof initHistoryDialog> | null = null;
+let imager: ReturnType<typeof initImageDialog> | null = null;
 // Set when a restore or an undo has its own toast: the generic «Nouvelle palette» sentence stays silent for that render.
 let quiet = false;
 // A valid hash wins over the system theme and the random seed; a bad one leaves a fresh random palette and a message.
@@ -57,6 +59,7 @@ const undoable = withUndo(createStore(loaded.kind === 'ok' ? stateFromShared(loa
     exporter?.update(next);
     sync?.write(next);
     past?.track(next);
+    imager?.track(next);
   };
   const kind = kindOf(prev, next);
   if (kind) transition(ui, kind, next, update);
@@ -82,12 +85,14 @@ document.getElementById('exportBtn')?.addEventListener('click', () => {
   if (exporter?.isOpen()) {
     dialog?.close(false);
     past?.close(false);
+    imager?.close(false);
   }
 });
 for (const id of ['texte-fond', 'texte-surface', 'accent-fond', 'succes-surface', 'alerte-surface', 'accent2-fond'] as const) {
   pills.button(id).addEventListener('click', () => {
     exporter?.close(false);
     past?.close(false);
+    imager?.close(false);
   });
 }
 
@@ -103,7 +108,13 @@ dockButton?.addEventListener('click', () => {
   if (past?.isOpen()) {
     exporter?.close(false);
     dialog?.close(false);
+    imager?.close(false);
   }
+});
+imager = initImageDialog(ui, store, () => (quiet = true), () => {
+  exporter?.close(false);
+  dialog?.close(false);
+  past?.close(false);
 });
 /** Cmd/Ctrl+Z and Cmd/Ctrl+Shift+Z (Ctrl+Y): the palette goes back or forward; the mode and Vision stay as they are. */
 function step(back: boolean): void {
@@ -136,6 +147,6 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault();
     step(intent === 'undo');
   } else if (intent === 'escape') {
-    if (!closeManualCopy(ui) && !exporter?.close(true) && !past?.close(true)) dialog?.close(true);
+    if (!closeManualCopy(ui) && !exporter?.close(true) && !past?.close(true) && !imager?.close(true)) dialog?.close(true);
   }
 });

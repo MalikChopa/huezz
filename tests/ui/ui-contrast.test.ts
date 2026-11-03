@@ -100,6 +100,27 @@ function table(theme: SystemTheme): Row[] {
     { what: 'history "not saved" hint (ink) and its frame on bg', fg: t.ink, bg: t.bg, min: 4.5 },
     { what: 'history "Effacer" label (bg) on its ink background', fg: t.bg, bg: t.ink, min: 4.5 },
     { what: 'history button border (line-control) on the bar background (bg)', fg: t.lineControl, bg: t.bg, min: 3 },
+    // J15: image sheet
+    { what: 'image button border (line-control) on the bar background (bg)', fg: t.lineControl, bg: t.bg, min: 3 },
+    { what: 'image drop zone label (ink) on its panel background', fg: t.ink, bg: t.panel, min: 4.5 },
+    { what: 'image drop zone hint (muted) on its panel background', fg: t.muted, bg: t.panel, min: 4.5 },
+    { what: 'image drop zone dashed outline (line-control) on the dialog background (bg)', fg: t.lineControl, bg: t.bg, min: 3 },
+    { what: 'image drop zone dashed outline (line-control) on its own panel background', fg: t.lineControl, bg: t.panel, min: 3 },
+    { what: 'image drop zone while a file is dragged or hovered: label (ink) on bg', fg: t.ink, bg: t.bg, min: 4.5 },
+    { what: 'image drop zone while a file is dragged or hovered: hint (muted) on bg', fg: t.muted, bg: t.bg, min: 4.5 },
+    { what: 'image drop zone while a file is dragged or hovered: outline (ink) on bg', fg: t.ink, bg: t.bg, min: 3 },
+    { what: 'image note (muted) on bg', fg: t.muted, bg: t.bg, min: 4.5 },
+    { what: 'image message (ink) and its frame on bg', fg: t.ink, bg: t.bg, min: 4.5 },
+    { what: 'image preview frame (line-control) on bg', fg: t.lineControl, bg: t.bg, min: 3 },
+    { what: 'image card name (ink) on bg', fg: t.ink, bg: t.bg, min: 4.5 },
+    { what: 'image card name (ink) on its hover background (panel)', fg: t.ink, bg: t.panel, min: 4.5 },
+    { what: 'image card harmony (muted) on bg', fg: t.muted, bg: t.bg, min: 4.5 },
+    { what: 'image card harmony (muted) on its hover background (panel)', fg: t.muted, bg: t.panel, min: 4.5 },
+    { what: 'image card "Utiliser" label (ink) on bg', fg: t.ink, bg: t.bg, min: 4.5 },
+    { what: 'image card "Utiliser" label (ink) on its hover background (panel)', fg: t.ink, bg: t.panel, min: 4.5 },
+    { what: 'image card "Utiliser" outline (line-control) on bg', fg: t.lineControl, bg: t.bg, min: 3 },
+    { what: 'image card "Utiliser" outline (line-control) on its hover background (panel)', fg: t.lineControl, bg: t.panel, min: 3 },
+    { what: 'image card hovered "Utiliser" label (bg) on its ink background', fg: t.bg, bg: t.ink, min: 4.5 },
   ];
   for (const mode of THEMES) {
     const accent = state.theme[mode].accent;
@@ -241,6 +262,15 @@ describe('J5: the export menu and the share button use the audited tokens (tool.
     ['.hstar[aria-pressed=true]', [/color:var\(--ui-ink\)/]],
     ['.hempty', [/color:var\(--ui-muted\)/]],
     ['.hwarn', [/border:1.5px solid var\(--ui-ink\)/]],
+    // J15: image sheet
+    ['#imgBtn', [/border-color:var\(--ui-line-control\)/]],
+    ['.idrop', [/border:1.5px dashed var\(--ui-line-control\)/, /background:var\(--ui-panel\)/, /color:var\(--ui-ink\)/]],
+    ['.idrop span', [/color:var\(--ui-muted\)/]],
+    ['.idrop:hover,.idrop.is-over', [/border-color:var\(--ui-ink\)/, /background:var\(--ui-bg\)/]],
+    ['.imsg', [/border:1.5px solid var\(--ui-ink\)/]],
+    ['.iprev canvas', [/border:1px solid var\(--ui-line-control\)/]],
+    ['.iuse', [/border:1px solid var\(--ui-line-control\)/]],
+    ['.icard:hover .iuse', [/background:var\(--ui-ink\)/, /color:var\(--ui-bg\)/]],
   ];
   for (const [selector, patterns] of cases) {
     it(`${selector} uses the audited tokens`, () => {
@@ -248,6 +278,9 @@ describe('J5: the export menu and the share button use the audited tokens (tool.
       for (const re of patterns) expect(body, selector).toMatch(re);
     });
   }
+  it('J15: the drop zone turns to a solid ink outline while a file is dragged over it', () => {
+    expect(css).toMatch(/\.idrop\.is-over\{border-style:solid;box-shadow:inset 0 0 0 1px var\(--ui-ink\)\}/);
+  });
   it('the selected button rule comes after the hover rule with the same specificity (a hovered selected button keeps ink on bg)', () => {
     expect(css.indexOf('.xfmt button[aria-checked=true]')).toBeGreaterThan(css.indexOf('.xfmt button:hover'));
   });

@@ -6,6 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { exportText } from '../../src/export';
 import type { ExportInput } from '../../src/export/keys';
 import { decodeHash } from '../../src/state/url';
+import { fourColours } from './image-helpers';
 import { pixelsOf, ratio, shotsDir, url, type Rgb } from './j6-helpers';
 import { fixedHashFor } from '../fixed-hash.mjs';
 
@@ -561,6 +562,95 @@ describe.skipIf(!available)('WebKit engine (Playwright build; not Safari itself)
       await s.page.click('#histBtn');
       expect(await s.page.locator('#hFav .hitem').count()).toBe(0);
       expect(await s.page.locator('#hRec .hitem').count()).toBe(1);
+      expectClean(s.probe);
+    });
+  });
+
+  describe('J15: palette from an image (WebKit engine of Playwright, not Safari)', () => {
+    const four = { name: 'four.png', mimeType: 'image/png', buffer: fourColours() };
+    const cardsReady = (page: Page) => page.waitForFunction(() => document.querySelectorAll('#iList .icard').length >= 3, undefined, { timeout: 30_000 });
+
+    it('a picked file gives 3 to 5 cards; a card applies, closes the sheet, gives the focus back, and undo brings the old palette back', async () => {
+      const s = await open();
+      const { page } = s;
+      const before = await dockHex(page);
+      await page.click('#imgBtn');
+      await page.setInputFiles('#iFile', four);
+      await cardsReady(page);
+      const want = await page.locator('#iList .icard').nth(1).locator('rect').evaluateAll((rs) => rs.map((r) => r.getAttribute('fill') ?? ''));
+      expect(want).toHaveLength(7);
+      await page.locator('#iList .icard').nth(1).click();
+      await page.waitForFunction((w) => [...document.querySelectorAll('.sw-hex')].map((e) => e.textContent).join() === w, want.join(), { timeout: 30_000 });
+      expect(await page.isVisible('#imenu')).toBe(false);
+      expect(await page.evaluate(() => document.activeElement?.id)).toBe('imgBtn');
+      expect(await toast(page)).toMatch(/^Palette tirée de ton image : /);
+      await settle(page);
+      await page.keyboard.press('Control+z');
+      await page.waitForFunction((b) => [...document.querySelectorAll('.sw-hex')].map((e) => e.textContent).join() === b, before.join(), { timeout: 30_000 });
+      expectClean(s.probe);
+    });
+
+    it('a text file, a corrupt PNG, an SVG and a HEIC-like file each end in a visible message, and a good image is read right after', async () => {
+      const s = await open();
+      const { page } = s;
+      await page.click('#imgBtn');
+      const heic = Buffer.concat([Buffer.from([0, 0, 0, 24]), Buffer.from('ftypheic'), Buffer.alloc(16)]);
+      const cases: [{ name: string; mimeType: string; buffer: Buffer }, RegExp][] = [
+        [{ name: 'a.txt', mimeType: 'text/plain', buffer: Buffer.from('hello') }, /n'est pas une image/],
+        [{ name: 'a.png', mimeType: 'image/png', buffer: Buffer.from('not a png at all') }, /n'a pas pu être lue/],
+        [{ name: 'a.svg', mimeType: 'image/svg+xml', buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>') }, /SVG/],
+        [{ name: 'a.heic', mimeType: 'image/heic', buffer: heic }, /Ce format d'image n'est pas lu/],
+      ];
+      for (const [file, message] of cases) {
+        await page.setInputFiles('#iFile', file);
+        await page.waitForFunction((m) => !document.getElementById('iMsg')!.hidden && new RegExp(m).test(document.getElementById('iMsg')!.textContent ?? ''), message.source, { timeout: 30_000 });
+        expect(await page.locator('#iList .icard').count()).toBe(0);
+      }
+      await page.setInputFiles('#iFile', four);
+      await cardsReady(page);
+      expectClean(s.probe);
+    });
+
+    it('drop and paste events: the sheet opens on the image (events built in the page)', async () => {
+      const s = await open();
+      const { page } = s;
+      const b64 = four.buffer.toString('base64');
+      const send = (kind: 'drop' | 'paste') =>
+        page.evaluate(
+          ([data, which]) => {
+            const dt = new DataTransfer();
+            dt.items.add(new File([Uint8Array.from(atob(data as string), (c) => c.charCodeAt(0))], 'four.png', { type: 'image/png' }));
+            const steps = which === 'drop' ? ['dragenter', 'dragover', 'drop'] : ['paste'];
+            for (const t of steps) {
+              const e = which === 'drop' ? new DragEvent(t, { dataTransfer: dt, bubbles: true, cancelable: true }) : new ClipboardEvent(t, { clipboardData: dt, bubbles: true, cancelable: true });
+              document.body.dispatchEvent(e);
+            }
+          },
+          [b64, kind] as const,
+        );
+      await send('drop');
+      await cardsReady(page);
+      await page.click('#iClose');
+      await send('paste');
+      await cardsReady(page);
+      expectClean(s.probe);
+    });
+
+    it('a phone-sized window (touch): the sheet is under the pills and a card is at least 44 px high', async () => {
+      const s = await open({ width: 390, height: 844, touch: true });
+      const { page } = s;
+      await page.tap('#imgBtn');
+      await page.setInputFiles('#iFile', four);
+      await cardsReady(page);
+      const r = await page.evaluate(() => ({
+        top: document.getElementById('imenu')!.getBoundingClientRect().top,
+        pills: document.getElementById('pills')!.getBoundingClientRect().bottom,
+        card: document.querySelector('#iList .icard')!.getBoundingClientRect().height,
+        over: document.documentElement.scrollWidth - innerWidth,
+      }));
+      expect(r.top).toBeGreaterThanOrEqual(r.pills - 0.5);
+      expect(r.card).toBeGreaterThanOrEqual(44);
+      expect(r.over).toBeLessThanOrEqual(0);
       expectClean(s.probe);
     });
   });

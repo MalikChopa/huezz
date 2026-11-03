@@ -81,6 +81,7 @@ kbd{font:500 11px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
 .acts{display:flex;gap:8px}
 #share{border-color:var(--ui-line-control)}
 #histBtn{border-color:var(--ui-line-control)}
+#imgBtn{border-color:var(--ui-line-control)}
 .cdlg.xmenu{top:68px;right:20px;width:440px;max-width:calc(100vw - 24px);max-height:calc(100vh - 80px);max-height:calc(100dvh - 80px);border-radius:18px;--cd-pad:14px}
 .xfmt{display:grid;grid-template-columns:repeat(6,auto);gap:4px;margin-bottom:12px}
 .xfmt button,.xopt button{height:32px;padding:0 10px;font-size:12.5px;font-weight:560;border-radius:999px;border:1px solid var(--ui-line-control);background:var(--ui-bg);color:var(--ui-ink)}
@@ -126,6 +127,22 @@ kbd{font:500 11px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
 .hclear,.hask{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
 .hask{font-size:13px;font-weight:560}
 .hempty[hidden],.hwarn[hidden],.hask[hidden],#hClear[hidden],.hfoot .xfoot[hidden]{display:none}
+
+/* Image sheet (F1): the cards reuse the history rows (.hrow, .hstrip, .hname); the drop zone is a real button with a dashed outline (3:1) that turns solid while a file is dragged. */
+.idrop{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;padding:18px 14px;border:1.5px dashed var(--ui-line-control);border-radius:14px;background:var(--ui-panel);color:var(--ui-ink);text-align:center}
+.idrop svg{width:24px;height:24px;margin-bottom:2px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.idrop b{font-size:14px;font-weight:600}
+.idrop span{font-size:12.5px;color:var(--ui-muted)}
+.idrop:hover,.idrop.is-over{border-color:var(--ui-ink);background:var(--ui-bg)}
+.idrop.is-over{border-style:solid;box-shadow:inset 0 0 0 1px var(--ui-ink)}
+.imsg{margin:10px 0 0;padding:10px 12px;border-radius:12px;border:1.5px solid var(--ui-ink);font-size:13px;line-height:1.4}
+.iprev{display:flex;align-items:center;gap:12px;margin-top:12px}
+.iprev canvas{display:block;max-width:132px;max-height:96px;border:1px solid var(--ui-line-control);border-radius:10px}
+.iprev p{margin:0;font-size:13px}
+.imenu .hlist{margin-top:10px}
+.iuse{flex:none;margin-left:auto;padding:4px 10px;border:1px solid var(--ui-line-control);border-radius:999px;font-size:12.5px;font-weight:600}
+.icard:hover .iuse{background:var(--ui-ink);color:var(--ui-bg);border-color:var(--ui-ink)}
+.imsg[hidden],.iprev[hidden]{display:none}
 
 /* Scene area (the mock-ups themselves are in mockups.css) */
 .scene-area{position:relative;min-height:calc(100vh - 60px);display:flex;flex-direction:column;padding:26px 40px 148px;
@@ -259,7 +276,7 @@ kbd{font:500 11px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
   #hasard{padding:0 14px}
 }
 /* Just above that, a wide font (Linux, Windows, Android) cannot fit the key hint next to the labels: it goes, and the gaps tighten. */
-@media (min-width:961px) and (max-width:1060px){
+@media (min-width:961px) and (max-width:1060px),(min-width:1201px) and (max-width:1300px){
   .bar{gap:10px}
   .btn kbd{display:none}
   #hasard{padding:0 14px}
@@ -271,12 +288,12 @@ kbd{font:500 11px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
 }
 /* Three icon buttons on the right need a little more room in a narrow desktop window with a wide font. */
 @media (min-width:761px) and (max-width:960px){
-  .bar{padding:0 12px;gap:6px}
-  .ctrls,.acts{gap:6px}
+  .bar{padding:0 8px;gap:4px}
+  .ctrls,.acts{gap:4px}
   .chip-base input[type=text]{width:66px}
-  .sel select{padding:0 28px 0 10px}
-  .sel::after{right:12px}
-  #hasard{padding:0 10px}
+  .sel select{padding:0 24px 0 8px}
+  .sel::after{right:10px}
+  #hasard{padding:0 8px}
 }
 @media (max-width:760px){
   .bar{flex-wrap:wrap;height:auto;padding:calc(10px + env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 10px max(14px,env(safe-area-inset-left));gap:10px}
@@ -293,7 +310,7 @@ kbd{font:500 11px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
   #hasard{flex:1 1 auto;padding:0 12px}
   .seg{padding:0;border:0;box-shadow:inset 0 0 0 1px var(--ui-line-control)}
   .seg button{width:44px;height:44px}
-  .acts{gap:4px}
+  .acts{gap:4px;margin-left:auto}
   .cdlg,.cdlg.xmenu{left:max(8px,env(safe-area-inset-left));right:max(8px,env(safe-area-inset-right));top:auto;bottom:calc(8px + env(safe-area-inset-bottom));width:auto;max-width:none;max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px - env(safe-area-inset-bottom));--cd-pad:14px;border-radius:20px;overscroll-behavior:contain}
   .cdlg-x{width:44px;height:44px;margin:-8px -8px -8px 0}
   .xfmt{grid-template-columns:repeat(3,1fr)}
@@ -302,6 +319,8 @@ kbd{font:500 11px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
   .hstar{width:44px;height:44px}
   .hstrip{width:84px}
   .hfoot .btn{height:44px}
+  .idrop{padding:14px 12px}
+  .iprev canvas{max-width:96px;max-height:72px}
   .xcheck input{width:24px;height:24px}
   #xOut{height:150px;font-size:16px}
   .scene-area{padding:18px 16px calc(132px + env(safe-area-inset-bottom));min-height:0}
@@ -342,8 +361,8 @@ kbd{font:500 11px/1 var(--mono);padding:3px 6px;border-radius:5px;border:1px sol
 /* Windows high contrast: system colours; palette swatches keep their colours, selected states use Highlight. */
 @media (forced-colors:active){
   :focus-visible{outline:3px solid Highlight;box-shadow:none}
-  .stage-wrap,.sw,.pill-dot,.chip,.cdlg-sample,.brand-mark,.chip-base input[type=color],.xpng canvas,.hstrip{forced-color-adjust:none}
-  .btn,.sel select,.seg,.pill,.cdlg,.cdlg-x,.xfmt button,.xopt button,.chip-base,.dock,.base-err,.sw-lock::after,.hwarn{border:1px solid CanvasText}
+  .stage-wrap,.sw,.pill-dot,.chip,.cdlg-sample,.brand-mark,.chip-base input[type=color],.xpng canvas,.hstrip,.iprev canvas{forced-color-adjust:none}
+  .btn,.sel select,.seg,.pill,.cdlg,.cdlg-x,.xfmt button,.xopt button,.chip-base,.dock,.base-err,.sw-lock::after,.hwarn,.imsg,.idrop,.iuse{border:1px solid CanvasText}
   .sw{border:1px solid CanvasText;box-shadow:none}
   .seg button[aria-pressed=true],.xfmt button[aria-checked=true],.xopt button[aria-checked=true],.pill.fail{background:Highlight;color:HighlightText;forced-color-adjust:none}
   .pill.fail .pill-lv{background:HighlightText;color:Highlight}

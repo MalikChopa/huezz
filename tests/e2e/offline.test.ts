@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { exportText, type OutputId } from '../../src/export';
 import type { ExportInput } from '../../src/export/keys';
 import { decodeHash } from '../../src/state/url';
+import { fourColours, twoColours } from './image-helpers';
 import { pixelsOf, ratio, parseCss, type Rgb } from './j6-helpers';
 import { FIXED_HASH } from '../fixed-hash.mjs';
 
@@ -266,6 +267,33 @@ describe('offline after load, on a fictitious https origin', () => {
     await page.click('#hClear');
     await page.click('#hYes');
     expect(await page.locator('.hitem').count()).toBe(0);
+
+    // J15: palette from an image: a picked file, a file that cannot be read, a drop, a paste, a candidate applied (the picture is read by the page itself): no request either.
+    const cardsShown = (): Promise<number> => page.locator('#iList .icard').count();
+    await page.click('#imgBtn');
+    await page.setInputFiles('#iFile', { name: 'four.png', mimeType: 'image/png', buffer: fourColours() });
+    await page.waitForFunction(() => document.querySelectorAll('#iList .icard').length >= 3);
+    await page.setInputFiles('#iFile', { name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('hello') });
+    await page.waitForFunction(() => document.querySelectorAll('#iList .icard').length === 0 && !document.getElementById('iMsg')?.hidden);
+    const b64 = twoColours().toString('base64');
+    await page.evaluate((data) => {
+      const dt = new DataTransfer();
+      dt.items.add(new File([Uint8Array.from(atob(data), (c) => c.charCodeAt(0))], 'two.png', { type: 'image/png' }));
+      for (const t of ['dragenter', 'dragover', 'drop']) document.body.dispatchEvent(new DragEvent(t, { dataTransfer: dt, bubbles: true, cancelable: true }));
+    }, b64);
+    await page.waitForFunction(() => document.querySelectorAll('#iList .icard').length >= 3);
+    await page.click('#iClose');
+    await page.evaluate(async (data) => {
+      const dt = new DataTransfer();
+      dt.items.add(new File([Uint8Array.from(atob(data), (c) => c.charCodeAt(0))], 'two.png', { type: 'image/png' }));
+      document.body.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+    }, b64);
+    await page.waitForFunction(() => document.querySelectorAll('#iList .icard').length >= 3);
+    const beforeApply = await dockHex(page);
+    await page.locator('#iList .icard').nth(0).click();
+    await settle(page);
+    expect(await dockHex(page)).not.toEqual(beforeApply);
+    expect(await cardsShown()).toBe(0);
   }, 120_000);
 
   it('still one request and no failure: the whole session made no network traffic', () => {

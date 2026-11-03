@@ -31,7 +31,7 @@ export function keyIntent(k: KeyFacts): Intent | null {
   return null;
 }
 
-const TYPING = 'input:not([type=button]):not([type=color]):not([type=checkbox]):not([type=radio]), textarea, select, [contenteditable]';
+export const TYPING = 'input:not([type=button]):not([type=color]):not([type=checkbox]):not([type=radio]), textarea, select, [contenteditable]';
 const NATIVE = 'button, a[href], input, textarea, select, summary, [contenteditable], [role=button], [role=checkbox], [role=switch], [role=tab], [role=option], [role=menuitem]';
 
 export function factsOf(e: KeyboardEvent): KeyFacts {

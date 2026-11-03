@@ -144,16 +144,16 @@ describe('export menu: structure and keyboard', () => {
     await clean(s);
   });
 
-  it('tab order of the bar: Hasard, mode, Partager, Exporter; a click outside closes without moving the focus', async () => {
+  it('tab order of the bar: Hasard, mode, Image, Historique, Partager, Exporter; a click outside closes without moving the focus', async () => {
     const s = await open();
     const { page } = s;
     await page.focus('#hasard');
     const seen: string[] = [];
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
       await page.keyboard.press('Tab');
       seen.push(await page.evaluate(() => document.activeElement?.id || (document.activeElement as HTMLElement).dataset.mode || ''));
     }
-    expect(seen).toEqual(['light', 'histBtn', 'share', 'exportBtn']);
+    expect(seen).toEqual(['light', 'imgBtn', 'histBtn', 'share', 'exportBtn']);
     await openMenu(page);
     await page.mouse.click(300, 600);
     expect(await page.isVisible('#xmenu')).toBe(false);

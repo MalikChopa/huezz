@@ -92,6 +92,14 @@ export function setHarmony(harmony: Harmony): Action {
   };
 }
 
+/**
+ * An image candidate (base colour + harmony + the seed derived from the base): the palette is built from scratch, locks cleared,
+ * so the same candidate is the same palette whatever was on screen. The mode and the Hasard counter stay the current ones.
+ */
+export function useCandidate(c: { base: string; harmony: Harmony; seed: number }): Action {
+  return (s) => ({ ...regenerate(s, { harmony: c.harmony, seed: c.seed, locks: 0, base: c.base }), mode: s.mode, shuffles: s.shuffles });
+}
+
 export function setMode(mode: Mode): Action {
   return (s) => (mode === s.mode ? s : { ...s, mode });
 }

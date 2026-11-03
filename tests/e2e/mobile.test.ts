@@ -2,6 +2,7 @@ import type { Page } from 'playwright-core';
 import { describe, expect, it } from 'vitest';
 import { initialState } from '../../src/state/state';
 import { encodeHash } from '../../src/state/url';
+import { fourColours, outcome, pick, png } from './image-helpers';
 import { WIDE_FONT, settle, shotsDir, useBrowser, type Session } from './j6-helpers';
 
 const { open } = useBrowser();
@@ -57,11 +58,13 @@ describe('reflow (WCAG 1.4.10): no horizontal scroll', () => {
     });
   }
 
-  it('the bar is on 2 lines at 390 (3 at most at 320), the hex field hidden, no text clipped, Hasard text and kbd', async () => {
-    for (const [width, maxLines] of [[390, 2], [414, 2], [480, 2], [600, 2], [320, 3]] as const) {
+  // J15: four 44 px actions (Image, Historique, Partager, Exporter) next to Hasard and the mode switch need about 420 px on one row (4 x 44 + 3 x 4 + 88 + 96 + 2 x 10 + 28 of margins):
+  // below that the actions take a third line (390 and 414 px), from 430 px the bar is on 2 lines.
+  it('the bar is on 2 lines from 430 px (3 at most from 320 to 414), the hex field hidden, no text clipped, Hasard text and kbd', async () => {
+    for (const [width, maxLines] of [[390, 3], [414, 3], [430, 2], [480, 2], [600, 2], [320, 3]] as const) {
       const { page } = await open({ width, height: 800, touch: true });
       const bar = await page.evaluate(() => {
-        const items = [...document.querySelectorAll('.bar .brand, .bar #base, .bar #harm, .bar #hasard, .bar .seg, .bar #share, .bar #exportBtn')];
+        const items = [...document.querySelectorAll('.bar .brand, .bar #base, .bar #harm, .bar #hasard, .bar .seg, .bar #imgBtn, .bar #histBtn, .bar #share, .bar #exportBtn')];
         const centres = items.map((e) => { const r = e.getBoundingClientRect(); return r.top + r.height / 2; }).sort((a, b) => a - b);
         const tops = new Set<number>();
         let line = -100;
@@ -76,11 +79,10 @@ describe('reflow (WCAG 1.4.10): no horizontal scroll', () => {
       expect(bar.hexVisible).toBe(false);
       expect(bar.minLeft).toBeGreaterThanOrEqual(0);
       expect(bar.maxRight).toBeLessThanOrEqual(bar.vw);
-      if (width === 390) expect(bar.lines).toBe(2);
       // No clipped text: every label of the bar fits its box (select: measured with the canvas, for each option).
       const clipped = await page.evaluate(() => {
         const bad: string[] = [];
-        for (const e of document.querySelectorAll<HTMLElement>('.bar .brand, .bar #hasard, .bar #share, .bar #exportBtn')) {
+        for (const e of document.querySelectorAll<HTMLElement>('.bar .brand, .bar #hasard, .bar #imgBtn, .bar #histBtn, .bar #share, .bar #exportBtn')) {
           if (e.scrollWidth > e.clientWidth + 1) bad.push(`${e.id || e.className}: ${e.scrollWidth} > ${e.clientWidth}`);
         }
         const sel = document.querySelector<HTMLSelectElement>('#harm') as HTMLSelectElement;
@@ -161,8 +163,8 @@ describe('target size at 390 (WCAG 2.5.8 minimum 24 x 24; 44 x 44 for the main c
 
   it('inputs, selects and textareas are at least 16 px (iOS does not zoom on focus) under 760 px, and not at 1440 where it is not needed', async () => {
     const { page } = await open(phone);
-    // #baseHex is display:none under 760 px (the colour input does the job), so it never takes the focus.
-    const sizes = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('input:not([type=checkbox]):not([type=color]):not(#baseHex), select, textarea')].map((e) => ({ id: e.id, px: parseFloat(getComputedStyle(e).fontSize) })));
+    // #baseHex is display:none under 760 px (the colour input does the job), so it never takes the focus. A file input opens the picker and no keyboard: iOS does not zoom on it.
+    const sizes = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('input:not([type=checkbox]):not([type=color]):not([type=file]):not(#baseHex), select, textarea')].map((e) => ({ id: e.id, px: parseFloat(getComputedStyle(e).fontSize) })));
     expect(sizes.map((s) => s.id).sort()).toEqual(['harm', 'manualField', 'vision', 'xOut']);
     for (const s of sizes) expect(s.px, s.id).toBeGreaterThanOrEqual(16);
   });
@@ -211,7 +213,7 @@ describe('bottom sheets, toast, safe areas, snapping at 390', () => {
   const savedLinks = (n: number): string[] => Array.from({ length: n }, (_, i) => encodeHash({ ...initialState('light', 0x01380f55 + i * 977, 'split-complementary'), mode: 'light' }));
   for (const font of [undefined, WIDE_FONT]) {
     for (const width of [320, 360, 390, 430]) {
-      it(`sheets stay under the pills at ${width} x 844 (${font === undefined ? 'system font' : 'wide font'}): 6 export formats, a full history, the contrast sheet`, async () => {
+      it(`sheets stay under the pills at ${width} x 844 (${font === undefined ? 'system font' : 'wide font'}): 6 export formats, a full history, the contrast sheet, the image sheet`, async () => {
         const saved = JSON.stringify({ v: 1, recent: savedLinks(20), fav: savedLinks(30).slice(20) });
         const { page } = await open({ width, height: 844, touch: true, font, initScript: `try{localStorage.setItem('huezz.history.v1',${JSON.stringify(saved)})}catch(e){}` });
         const gap = (id: string): Promise<number> =>
@@ -232,6 +234,12 @@ describe('bottom sheets, toast, safe areas, snapping at 390', () => {
         await page.click('.pill[data-pair=accent-fond]');
         await settle(page);
         expect(await gap('#cdlg'), 'contrast').toBeGreaterThanOrEqual(-0.5);
+        // J15: the image sheet, with 3 to 5 candidates.
+        await page.keyboard.press('Escape');
+        await page.click('#imgBtn');
+        await pick(page, png('four.png', fourColours()));
+        expect((await outcome(page)).cards).toBeGreaterThanOrEqual(3);
+        expect(await gap('#imenu'), 'image sheet').toBeGreaterThanOrEqual(-0.5);
       });
     }
   }

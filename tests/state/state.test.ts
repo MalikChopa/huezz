@@ -3,7 +3,9 @@ import { HARMONIES } from '../../src/core/harmony';
 import { formatHex, parseHex } from '../../src/core/hex';
 import { next } from '../../src/core/random';
 import { isLocked, LOCK_NONE, ROLES } from '../../src/palette/roles';
-import { DEFAULT_HARMONY, hasard, initialState, setBase, setHarmony, setMode, toggleLock, type AppState } from '../../src/state/state';
+import { DEFAULT_HARMONY, hasard, initialState, setBase, setHarmony, setMode, toggleLock, useCandidate, type AppState } from '../../src/state/state';
+import { stateFromShared } from '../../src/state/share';
+import { decodeHash, encodeHash } from '../../src/state/url';
 import { fixedState, FIXED_SEED } from '../fixed-state';
 
 const HEX = /^#[0-9A-F]{6}$/;
@@ -177,5 +179,32 @@ describe('setHarmony / setMode / toggleLock', () => {
       expect(on.theme).toBe(s0.theme);
       expect(toggleLock(role)(on).locks).toBe(0);
     }
+  });
+});
+
+describe('useCandidate (palette from an image)', () => {
+  const cand = { base: '#2E62D6', harmony: 'triad' as const, seed: 123456789 };
+  it('builds the palette from the candidate alone: base kept as the light accent, locks cleared, mode and Hasard counter kept', () => {
+    const start = hasard()(toggleLock('fond')(toggleLock('texte')(setMode('dark')(fixedState('light')))));
+    const s = useCandidate(cand)(start);
+    assertValid(s);
+    expect(s.theme.light.accent).toBe('#2E62D6');
+    expect(s.base).toBe('#2E62D6');
+    expect(s.harmony).toBe('triad');
+    expect(s.seed).toBe(123456789);
+    expect(s.locks).toBe(LOCK_NONE);
+    expect(s.mode).toBe('dark');
+    expect(s.shuffles).toBe(start.shuffles);
+  });
+  it('the same candidate gives the same palette whatever was on screen', () => {
+    const a = useCandidate(cand)(fixedState('light'));
+    const b = useCandidate(cand)(hasard()(hasard()(setHarmony('tetrad')(setBase('#FF0000')(fixedState('dark'))))));
+    expect(b.theme).toEqual(a.theme);
+  });
+  it('survives the share link: the link of the candidate palette decodes to the same 14 colours', () => {
+    const s = useCandidate(cand)(fixedState('light'));
+    const decoded = decodeHash(encodeHash({ mode: s.mode, harmony: s.harmony, seed: s.seed, locks: s.locks, theme: s.theme }));
+    expect(decoded.kind).toBe('ok');
+    if (decoded.kind === 'ok') expect(stateFromShared(decoded.value).theme).toEqual(s.theme);
   });
 });
