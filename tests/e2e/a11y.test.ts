@@ -122,7 +122,7 @@ describe('landmarks, headings, names, roles and states', () => {
   it('lang, landmarks, one h1, heading order, names of the main controls (aria snapshot and Chrome tree)', async () => {
     const { page, context } = await open();
     expect(await page.getAttribute('html', 'lang')).toBe('fr');
-    expect(await page.title()).toBe('Huezz : générateur de palettes');
+    expect(await page.title()).toBe('Huezz : générateur de palettes OKLCH · Malik Moussaoui (Chopa)');
     // Open both dialogs in turn so that their headings are in the page when read.
     const headings = async () => page.evaluate(() => [...document.querySelectorAll('h1, h2, h3, h4, h5, h6')].filter((h) => (h as HTMLElement).offsetParent !== null || h.closest('[hidden]') === null).map((h) => [Number(h.tagName[1]), h.textContent?.trim() ?? '']));
     expect(await headings()).toEqual([[1, 'Huezz'], [2, 'Argile turquoise'], [3, 'Cultive ton quartier, une parcelle à la fois.']]);
