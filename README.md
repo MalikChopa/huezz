@@ -197,3 +197,7 @@ Les issues et les pull requests sont les bienvenues. Lance `npm run check` avant
 ### Licence
 
 MIT, voir [LICENSE](LICENSE). Copyright (c) 2026 Chopa.
+
+---
+
+Créé par / Made by **Malik Moussaoui** (Chopa), Toulouse · [malikchopa.github.io](https://malikchopa.github.io/) · [GitHub](https://github.com/MalikChopa)
